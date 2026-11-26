@@ -53,9 +53,13 @@ export function addFullscreen(target, onChange) {
   return { isFull: () => active };
 }
 
-// 全画面中のグラフの高さ: 画面の高さから、同じ枠の中のほかの要素の高さを引いた残り
+// 全画面中のグラフの高さ: 画面の高さから、同じ枠の余白と、枠の中のほかの要素の高さ（上下マージン込み）を引いた残り。
+// 一覧の詳細枠は、帯をタップすると2行になるので、全画面中は最初から2行分の高さを取っておく（styles.css の .ct-full .ch-info）
 export function fitHeight(target, box, min) {
+  const px = (v) => parseFloat(v) || 0;
+  const ts = getComputedStyle(target);
   const others = Array.from(target.children).filter((c) => c !== box && !c.contains(box))
-    .reduce((s, c) => s + c.getBoundingClientRect().height, 0);
-  return Math.max(min, Math.floor(window.innerHeight - others - 24));
+    .reduce((s, c) => { const cs = getComputedStyle(c); return s + c.getBoundingClientRect().height + px(cs.marginTop) + px(cs.marginBottom); }, 0);
+  const bs = getComputedStyle(box);
+  return Math.max(min, Math.floor(window.innerHeight - px(ts.paddingTop) - px(ts.paddingBottom) - px(bs.marginTop) - px(bs.marginBottom) - others - 6));
 }

@@ -14,6 +14,9 @@ import mock  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LIVE = "--live" in sys.argv
+LEGACY_FONT = ('\n<style>#ch-root,#cmp-root{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Segoe UI","Yu Gothic UI",Meiryo,system-ui,sans-serif;'
+               'font-variant-numeric:tabular-nums;font-feature-settings:normal;letter-spacing:normal;font-style:normal}'
+               ':is(#ch-root,#cmp-root) :is(b,strong,th){font-weight:700}:is(#ch-root,#cmp-root) :is(select,input,button){font-family:inherit}</style>')
 if LIVE:
     mock.serve()  # file:// だと gviz が CORS で断るので http で配る
 OUT = ROOT / "tests" / "out"
@@ -85,6 +88,9 @@ async def open_tool(b, tool, kind, width, hash_=""):
     src, root = TOOLS[tool][kind]
     if kind == "legacy":
         body = (ROOT / src).read_text(encoding="utf-8")
+        # v1.0.1 で統合版だけ文字をシステムフォント・等幅数字に固定した（テーマの Web フォントで太さがちぐはぐになるため）。
+        # 見た目の比較では legacy にも同じ指定を足して、文字以外の差を見る
+        body += LEGACY_FONT
     else:
         body = src + '\n<script src="%s"></script>' % mock.url_for(ROOT / "dist" / "crash-tools.min.js")
         # 全画面ボタン（legacy にない追加機能）の行は隠して比べる。全画面の動きは tests/fullscreen.py で確認
