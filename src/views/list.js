@@ -1,12 +1,13 @@
 // 一覧ビュー: S&P500の対数チャート＋下落期間の帯＋回復までのタイムライン＋統計＋表
 import { DAY, fdJa, dur, pct, median } from '../core/format.js';
 import { loadEvents } from '../core/events.js';
-import { SERIES, loadSeries } from '../series/registry.js';
+import { SERIES, loadSeries, valueAt, hikes } from '../series/registry.js';
 import { segHTML, bindSeg } from '../ui/controls.js';
 import { el, f1, svg, pathD, yGrid, xGrid, logTicks, yearStep, onResize } from '../ui/chart.js';
 import { addFullscreen, fitHeight } from '../ui/fullscreen.js';
 
 const CLS = [['all', 'すべて'], ['bear', '暴落 -20%〜'], ['corr', '調整 -10〜20%']];
+const RATE = [['none', 'なし'], ['ust10y', '米10年金利'], ['ff', '政策金利']];
 const FROM = [['1871', '1871年〜'], ['1928', '1928年〜'], ['1970', '1970年〜'], ['2000', '2000年〜']];
 const COLS = [['name', '出来事'], ['dd', '下落率'], ['pk', 'ピーク'], ['tr', '底'], ['fall', '下落期間'], ['rec', '回復期間'], ['tot', '全期間'], ['rc', '回復日']];
 const INFO0 = '帯や表の行をタップすると詳細を表示';
@@ -14,13 +15,15 @@ const ERR = '<div class="ch-note">データを読み込めませんでした。�
 
 const HTML =
   '<div class="ch-ctl"><span class="ch-lab">対象</span>' + segHTML('ch-seg', 'cls', CLS, 'all') +
-  '<span class="ch-lab">期間</span>' + segHTML('ch-seg', 'from', FROM, '1871') + '</div>' +
+  '<span class="ch-lab">期間</span>' + segHTML('ch-seg', 'from', FROM, '1871') +
+  '<span class="ch-rategrp"><span class="ch-lab">金利を重ねる</span>' + segHTML('ch-seg', 'rate', RATE, 'none') + '</span></div>' +
   '<div class="ch-upd ch-lab"></div><div class="ch-stats"></div>' +
   '<div class="ch-fig"><div class="ch-chart"><div class="ch-note">データを読み込み中…</div></div>' +
   '<div class="ch-leg"><span><i style="background:var(--bear)"></i>暴落の下落期間（ピーク→底）</span>' +
   '<span><i style="background:var(--corr)"></i>調整の下落期間</span>' +
   '<span><i style="background:var(--bear);opacity:.25"></i>回復期間（下段、点線は未回復）</span>' +
   '<span><i style="background:var(--line);height:2px;vertical-align:3px"></i>S&amp;P500（対数目盛）</span></div>' +
+  '<div class="ch-leg2"></div>' + // 金利を重ねたときの凡例と注意書き
   '<div class="ch-info">' + INFO0 + '</div></div>' + // .ch-fig まで（全画面の範囲）
   '<div class="ch-act"></div>' + // 選んだ暴落を比較タブへ送るボタン（タブ統合時だけ出す）
   '<div class="ch-ctl"><input type="search" placeholder="名称で絞り込み（例：ショック）"><span class="ch-lab">見出しをタップで並び替え</span></div>' +
@@ -36,7 +39,8 @@ const col = (e) => (e.bear ? 'var(--bear)' : 'var(--corr)');
 export function mountList(host, { sheet, onCompare }) {
   host.innerHTML = '<div class="ch-root">' + HTML + '</div>';
   const R = host.firstChild, $ = (s) => R.querySelector(s);
-  const st = { cls: 'all', from: 1871, sort: 'pk', dir: 1, q: '', sel: null };
+  const st = { cls: 'all', from: 1871, sort: 'pk', dir: 1, q: '', sel: null, rate: 'none' };
+  const RATES = {}; // 読み込んだ金利の系列（初めて選んだときに読む）
   let EV = [], PX = [];
   const fs = addFullscreen($('.ch-fig'), () => chart());
 
@@ -47,6 +51,7 @@ export function mountList(host, { sheet, onCompare }) {
   function init() {
     R.querySelectorAll('.ch-seg').forEach((s) => bindSeg(s, (v) => {
       const k = s.dataset.k;
+      if (k == 'rate') { setRate(v); return; }
       st[k] = k == 'from' ? +v : v;
       draw();
     }));
@@ -71,6 +76,23 @@ export function mountList(host, { sheet, onCompare }) {
 
   function draw() { stats(); chart(); table(); }
 
+  // 金利を重ねる（なし／米10年金利／政策金利）。系列は初めて選んだときに読む。政策金利も読むのは、利上げ局面の帯に使うため
+  function setRate(v) {
+    st.rate = v;
+    const need = v == 'none' ? [] : ['ust10y', 'ff'].filter((k) => !RATES[k]);
+    Promise.all(need.map((k) => loadSeries(sheet, SERIES[k], 'monthly').then((r) => { RATES[k] = r; })))
+      .then(() => { if (st.rate == v) { legend2(); chart(); info(EV.filter((x) => x.id == st.sel)[0]); } })
+      .catch(() => { $('.ch-leg2').textContent = '金利のデータを読み込めませんでした。'; });
+  }
+  function legend2() {
+    const box = $('.ch-leg2');
+    if (st.rate == 'none') { box.innerHTML = ''; return; }
+    const d = SERIES[st.rate];
+    box.innerHTML = '<span><i style="background:' + d.color + ';height:2px;vertical-align:3px"></i>' + d.name + '（右目盛・月平均）</span>' +
+      '<span><i style="background:' + SERIES.ff.color + ';opacity:.55;height:5px;vertical-align:2px"></i>利上げ局面（政策金利が1%pt以上上がった期間）</span>' +
+      '<div class="ch-ratenote">急な利上げの後に暴落が来た時期もあれば、金利が上がりながら株も上がった時期や、金利と関係なく起きた暴落もあります。重ねて見比べてください。</div>';
+  }
+
   function stats() {
     const v = vis(), done = v.filter((e) => e.rc), on = v.filter((e) => !e.rc);
     const w = v.reduce((a, e) => (!a || e.dd < a.dd ? e : a), null);
@@ -87,7 +109,8 @@ export function mountList(host, { sheet, onCompare }) {
 
   function chart() {
     const box = $('.ch-chart'), W = Math.max(320, box.clientWidth || 800), mob = W < 560;
-    const m = { l: mob ? 38 : 50, r: 10, t: 10, b: 24 };
+    const RT = st.rate != 'none' ? RATES[st.rate] : null; // 重ねる金利
+    const m = { l: mob ? 38 : 50, r: RT ? (mob ? 30 : 38) : 10, t: 10, b: 24 };
     const x0 = Date.UTC(st.from, 0, 1), x1 = Math.max(PX.length ? PX[PX.length - 1][0] : Date.now(), Date.now() - 30 * DAY);
     const pts = PX.filter((p) => p[0] >= x0);
     if (!pts.length) { box.innerHTML = ''; return; }
@@ -128,6 +151,7 @@ export function mountList(host, { sheet, onCompare }) {
       if (st.sel == e.id) s += el('rect', { x: f1(a), y: m.t, width: f1(Math.max(1.5, c - a)), height: bot - m.t, fill: '#facc15', 'fill-opacity': '.18', stroke: '#ca8a04', 'pointer-events': 'none' });
     });
     s += el('path', { d: pathD(pts, X, Y), fill: 'none', stroke: 'var(--line)', 'stroke-width': 1.4, 'pointer-events': 'none' });
+    if (RT) s += rateLayer(RT, X, x0, x1, W, m, bot);
 
     box.innerHTML = svg(W, H, 'S&amp;P500と暴落期間', s);
     box.querySelector('svg').addEventListener('click', (ev) => {
@@ -136,13 +160,43 @@ export function mountList(host, { sheet, onCompare }) {
     });
   }
 
+  // 金利の線（右目盛）と利上げ局面の帯（グラフの下端）
+  function rateLayer(RT, X, x0, x1, W, m, bot) {
+    const rows = RT.filter((p) => p[0] >= x0 && p[0] <= x1);
+    if (!rows.length) return '';
+    const top = Math.max(...rows.map((p) => p[1]));
+    const st2 = top > 12 ? 4 : top > 6 ? 2 : 1, hi = Math.ceil((top * 1.08) / st2) * st2;
+    const Yr = (v) => m.t + (hi - v) / hi * (bot - m.t);
+    const c = SERIES[st.rate].color;
+    let s = '';
+    for (let v = 0; v <= hi + 1e-9; v += st2) s += el('text', { x: W - m.r + 4, y: f1(Yr(v)), dy: 4, 'font-size': 10, fill: c }, v + '%');
+    if (RATES.ff) hikes(RATES.ff).forEach(([a, b]) => {
+      if (b < x0) return;
+      const xa = X(Math.max(a, x0)), xb = X(Math.min(b, x1));
+      s += el('rect', { x: f1(xa), y: bot - 6, width: f1(Math.max(1.5, xb - xa)), height: 6, fill: SERIES.ff.color, 'fill-opacity': '.55', 'pointer-events': 'none' });
+    });
+    s += el('path', { d: pathD(rows, X, Yr), fill: 'none', stroke: c, 'stroke-width': 1.3, 'stroke-opacity': '.9', 'pointer-events': 'none' });
+    return s;
+  }
+
+  // 詳細枠に添える金利（ピーク時→底の時点の月平均）
+  function rateLine(e) {
+    const parts = ['ust10y', 'ff'].filter((k) => RATES[k]).map((k) => {
+      const a = valueAt(RATES[k], e.pk), b = valueAt(RATES[k], e.tr);
+      if (a == null || b == null || e.pk < RATES[k][0][0]) return '';
+      const d = b - a;
+      return SERIES[k].name + ' ' + a.toFixed(2) + '% → 底 ' + b.toFixed(2) + '%（' + (d >= 0 ? '+' : '') + d.toFixed(2) + 'pt）';
+    }).filter(String);
+    return parts.length ? '<br><span class="ch-rateinfo">' + parts.join('／') + '</span>' : '';
+  }
+
   function info(e) {
     const box = $('.ch-info');
     if (!e) { box.innerHTML = INFO0; box.style.borderLeftColor = ''; return; }
     box.style.borderLeftColor = col(e);
     box.innerHTML = '<b>' + e.name + '</b> ' + tag(e, true) + (e.grp ? ' <span class="ch-lab">' + e.grp + '</span>' : '') + '<br>' +
       fdJa(e.pk, e.mon) + '（' + e.pv.toLocaleString() + '）→ 底 ' + fdJa(e.tr, e.mon) + '（' + e.tv.toLocaleString() + '）<b> ' + pct(e.dd) + '</b>／下落 ' +
-      dur(e.fall) + '・回復 ' + (e.rc ? dur(e.rec) + '（' + fdJa(e.rc, e.mon) + '）' : ongo);
+      dur(e.fall) + '・回復 ' + (e.rc ? dur(e.rec) + '（' + fdJa(e.rc, e.mon) + '）' : ongo) + (st.rate != 'none' ? rateLine(e) : '');
   }
 
   // 比較タブへ送るボタン。日次データのある1928年以降の暴落だけ（比較ツールの対象）

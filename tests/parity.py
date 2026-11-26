@@ -102,7 +102,7 @@ async def open_tool(b, tool, kind, width, hash_=""):
     else:
         body = src + '\n<script src="%s"></script>' % mock.url_for(ROOT / "dist" / "crash-tools.min.js")
         # 全画面ボタン（legacy にない追加機能）の行は隠して比べる。全画面の動きは tests/fullscreen.py で確認
-        body += '\n<style>.ct-fsbar,.ct-tabs,.ch-act{display:none!important}</style>'  # legacy にない: 全画面ボタン・タブ・比較へ送るボタン
+        body += '\n<style>.ct-fsbar,.ct-tabs,.ch-act,.ch-rategrp,.c-ratebtn{display:none!important}</style>'  # legacy にない: 全画面ボタン・タブ・比較へ送るボタン・金利の切り替え
     f = OUT / f"parity_{tool}_{kind}.html"
     f.write_text(PAGE.format(body=body), encoding="utf-8")
     pg = await b.new_page(viewport={"width": width, "height": 1000})

@@ -2,7 +2,7 @@
 import { dt, num } from './format.js';
 
 export const DEFAULT_SHEET = '1JP-4PJimOphXB9pTvG8xCW4F12Jn5FrnHVUiT4iRVFM';
-export const TABS = { events: 257873827, monthly: 886500007, daily: 2091119745 };
+export const TABS = { events: 257873827, monthly: 886500007, daily: 2091119745, rates: 536414932 };
 
 export function gvizUrl(sheet, gid, tq) {
   return 'https://docs.google.com/spreadsheets/d/' + sheet + '/gviz/tq?tqx=out:csv&gid=' + gid +

@@ -99,3 +99,13 @@ html.ct-noscroll,html.ct-noscroll body{overflow:hidden}
 :is(#crash-tools,[data-tool]) .ch-root .ch-act{margin:-6px 0 14px}
 :is(#crash-tools,[data-tool]) .ch-root .ch-tocmp{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:#b0352b;padding:6px 12px;border:1px solid #b0352b;border-radius:8px;background:#fff}
 :is(#crash-tools,[data-tool]) .ch-root .ch-tocmp:hover{background:#fdf3f2}
+
+/* 金利を重ねる（v1.2.0） */
+:is(#crash-tools,[data-tool]) .ch-root .ch-rategrp{display:inline-flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+:is(#crash-tools,[data-tool]) .ch-root .ch-leg2{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin:4px 0 0}
+:is(#crash-tools,[data-tool]) .ch-root .ch-leg2:empty{display:none}
+:is(#crash-tools,[data-tool]) .ch-root .ch-leg2 i{display:inline-block;width:12px;margin-right:4px}
+:is(#crash-tools,[data-tool]) .ch-root .ch-ratenote{flex-basis:100%;font-size:12px;color:var(--muted)}
+:is(#crash-tools,[data-tool]) .ch-root .ch-rateinfo{color:#1a6b62}
+:is(#crash-tools,[data-tool]) .cmp-root .c-ratebtn[aria-pressed=true]{background:#eef7f6;color:#1a6b62;border-color:#1a8c80}
+:is(#crash-tools,[data-tool]) .cmp-root th.c-rateh{line-height:1.3}

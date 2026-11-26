@@ -1,7 +1,7 @@
 // 比較ビュー: ピークからの騰落率を重ね合わせ＋表＋冒頭の自動文＋「今回に近い下落を探す」
 import { DAY, fdSlash, dur, spct, year } from '../core/format.js';
 import { loadEvents, shortName } from '../core/events.js';
-import { SERIES, loadSeries } from '../series/registry.js';
+import { SERIES, loadSeries, valueAt } from '../series/registry.js';
 import { segHTML, bindSeg, chipHTML } from '../ui/controls.js';
 import { el, f1, svg, pathD, yGrid, xGrid, steps, onResize } from '../ui/chart.js';
 import { addFullscreen, fitHeight } from '../ui/fullscreen.js';
@@ -17,7 +17,8 @@ const HTML =
   '<div class="c-lead">データを読み込み中…</div>' +
   '<div class="c-row"><span class="c-lab">比べる暴落</span><span class="c-chips"></span></div>' +
   '<div class="c-row"><select class="c-add"><option value="">＋ 暴落を追加</option></select>' +
-  '<button class="btn c-sim" type="button">今回に近い下落を探す</button><button class="btn c-main" type="button">主な暴落に戻す</button></div>' +
+  '<button class="btn c-sim" type="button">今回に近い下落を探す</button><button class="btn c-main" type="button">主な暴落に戻す</button>' +
+  '<button class="btn c-ratebtn" type="button" aria-pressed="false">＋ 金利の変化も表に出す</button></div>' +
   '<div class="c-figwrap"><div class="c-row"><span class="c-lab">表示期間</span>' + segHTML('seg c-range', null, RANGES, '365') + '</div>' +
   '<div class="c-fig"><div class="c-msg">データを読み込み中…</div></div>' +
   '<div class="c-read c-lab">' + READ0 + '</div></div>' + // .c-figwrap まで（全画面の範囲）
@@ -48,6 +49,7 @@ export function mountCompare(host, { sheet }) {
   const R = host.firstChild, $ = (s) => R.querySelector(s), daily = SERIES.sp500;
   let EV = [], BY = {}, SEL = [], range = 365, cur = null, ALL = null;
   let ready = false, pending = [];
+  let showRate = false; const RATES = {}; // 表に金利の変化を出すか（既定は出さない）
   const CACHE = {};
   const fs = addFullscreen($('.c-figwrap'), () => { if (SEL.length) draw(); });
 
@@ -63,6 +65,16 @@ export function mountCompare(host, { sheet }) {
     sel.addEventListener('change', () => { if (sel.value) add(sel.value); sel.value = ''; });
     $('.c-main').addEventListener('click', () => setSel(defaults()));
     $('.c-sim').addEventListener('click', similar);
+    $('.c-ratebtn').addEventListener('click', () => {
+      showRate = !showRate;
+      const b = $('.c-ratebtn');
+      b.setAttribute('aria-pressed', showRate);
+      b.textContent = showRate ? '− 金利の変化を隠す' : '＋ 金利の変化も表に出す';
+      const need = showRate ? ['ust10y', 'ff'].filter((k) => !RATES[k]) : [];
+      Promise.all(need.map((k) => loadSeries(sheet, SERIES[k], 'monthly').then((r) => { RATES[k] = r; })))
+        .then(() => { if (SEL.length) draw(); })
+        .catch(() => { b.textContent = '金利のデータを読み込めませんでした'; });
+    });
     bindSeg($('.c-range'), (v) => { range = +v; if (cur != null) cur = Math.min(cur, range); draw(); });
     $('.c-chips').addEventListener('click', (ev) => {
       const b = ev.target.closest('button');
@@ -166,14 +178,25 @@ export function mountCompare(host, { sheet }) {
   function table(L) {
     const d = cur == null ? null : Math.round(cur);
     $('.c-dayh').textContent = d == null ? '—' : d + '日目の騰落率';
+    // 金利の変化の列（ピークの月 → 表の日数の時点、日数がなければ底の月）。月平均で比べる
+    const rk = showRate ? ['ust10y', 'ff'].filter((k) => RATES[k]) : [];
+    R.querySelectorAll('thead .c-rateh').forEach((x) => x.remove());
+    const hr = $('thead tr');
+    rk.forEach((k) => hr.insertAdjacentHTML('beforeend', '<th class="c-rateh">' + SERIES[k].name + '<br><span class="c-lab">ピーク→' + (d == null ? '底' : d + '日目') + '</span></th>'));
+    const rateTd = (e) => rk.map((k) => {
+      const t = d == null ? e.tr : e.pk + d * DAY, a = e.pk >= RATES[k][0][0] ? valueAt(RATES[k], e.pk) : null, b = valueAt(RATES[k], t);
+      if (a == null || b == null) return '<td>—</td>';
+      const x = b - a;
+      return '<td>' + a.toFixed(2) + '→' + b.toFixed(2) + '%<br><span class="c-lab">' + (x >= 0 ? '+' : '') + x.toFixed(2) + 'pt</span></td>';
+    }).join('');
     $('tbody').innerHTML = L.map((l) => {
       const e = l.e, full = CACHE[e.id] || [], v = d == null ? null : at(full, d), rc = e.rc ? Math.round((e.rc - e.pk) / DAY) : null;
       // 最大下落・底までは日次の「ピーク〜回復日」の最安値で（行の底値とは違うことがある）
       const mn = full.filter((x) => rc == null || x[0] <= rc).reduce((a, x) => (x[1] < a[1] ? x : a), [Math.round((e.tr - e.pk) / DAY), e.dd]);
       return '<tr><td><span class="chip" style="border:0;padding:0"><i style="background:' + l.c + '"></i></span> ' + e.name + '</td><td>' + fdSlash(e.pk) +
         '</td><td class="neg"><b>' + spct(mn[1]) + '</b></td><td>' + dur(Math.round(mn[0])) + '</td><td>' + (e.on ? '<span class="neg">未回復</span>' : dur(rc)) +
-        '</td><td>' + (v == null ? '—' : '<b' + (v < 0 ? ' class="neg"' : '') + '>' + spct(v) + '</b>') + '</td></tr>';
-    }).join('') || '<tr><td colspan="6">暴落を選んでください</td></tr>';
+        '</td><td>' + (v == null ? '—' : '<b' + (v < 0 ? ' class="neg"' : '') + '>' + spct(v) + '</b>') + '</td>' + rateTd(e) + '</tr>';
+    }).join('') || '<tr><td colspan="' + (6 + rk.length) + '">暴落を選んでください</td></tr>';
     $('.c-read').innerHTML = d == null ? READ0 : '<b>' + d + '日目</b>　' + L.map((l) => {
       const v = at(CACHE[l.e.id] || [], d);
       return '<span style="color:' + l.c + '">● ' + shortName(l.e) + ' ' + (v == null ? '—' : spct(v)) + '</span>';

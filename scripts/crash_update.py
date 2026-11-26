@@ -5,14 +5,15 @@
 - 月次終値: 当月（と前月）の行を最新の月末終値で更新、なければ追記
 - 暴落一覧: 継続中（回復日が空）の暴落の底を更新、高値を取り戻したら回復日を記入
             継続中がなく、最高値から10%以上下げていたら新しい暴落の行を追加
+- 金利_月次: FRED の GS10（米10年金利・月平均）と FEDFUNDS（政策金利・月平均）の直近の月を更新、なければ追記
 """
 import csv, io, json, sys, urllib.request, urllib.parse, datetime as dt
 
 SID = "1JP-4PJimOphXB9pTvG8xCW4F12Jn5FrnHVUiT4iRVFM"
-GID_EV, GID_M, GID_D = 257873827, 886500007, 2091119745
+GID_EV, GID_M, GID_D, GID_R = 257873827, 886500007, 2091119745, 536414932
 
-def get(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+def get(url, ua="Mozilla/5.0"):
+    req = urllib.request.Request(url, headers={"User-Agent": ua})
     return urllib.request.urlopen(req, timeout=60).read().decode("utf-8")
 
 def sheet(gid, tq=None):
@@ -94,6 +95,36 @@ else:
                                 "values": [nid, f"{low[0].year}年 （名称未定）", pk[0].isoformat(), pk[1],
                                            low[0].isoformat(), low[1], "", "", "日次終値"]}
             out["notes"].append(f"新しい下落 {nid}: {pk[0]} {pk[1]} → {low[0]} {low[1]}（{(low[1]/pk[1]-1)*100:.1f}%）。名称をユーザーに確認")
+# 金利（失敗しても株価の更新は止めない）
+out["rates"] = []
+try:
+    def fred(sid):  # FRED はブラウザを名乗る UA だと接続を切るので curl の UA で
+        r = list(csv.reader(io.StringIO(get(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}", "curl/8.5.0"))))[1:]
+        return {a[:7]: round(float(b), 2) for a, b in r if b not in ("", ".")}
+    g10, ff = fred("GS10"), fred("FEDFUNDS")
+    rt = sheet(GID_R)
+    rh = rt[0]
+    ci = {n: rh.index(n) for n in ["月", "米10年金利", "政策金利"]}
+    rrows = {r[ci["月"]][:7]: (i + 2, r) for i, r in enumerate(rt[1:]) if r[ci["月"]]}
+    next_r = len(rt) + 1
+    last = max(rrows) if rrows else "1871-01"
+    # 直近3か月は改定されることがあるので見直す。新しい月は追記
+    keys = sorted(k for k in set(g10) | set(ff) if k >= min(last, (today_utc.replace(day=1) - dt.timedelta(days=80)).isoformat()[:7]))
+    for k in keys:
+        v = [k + "-01", g10.get(k, ""), ff.get(k, "")]
+        if k in rrows:
+            row, cur = rrows[k]
+            old = [cur[ci["月"]][:10], cur[ci["米10年金利"]], cur[ci["政策金利"]]]
+            same = all((str(a) == str(b)) or (a != "" and b != "" and abs(float(a) - float(b)) < 1e-9) for a, b in zip(v[1:], old[1:]))
+            if not same:
+                out["rates"].append({"row": row, "values": v})
+        else:
+            out["rates"].append({"row": next_r, "values": v}); next_r += 1
+    if out["rates"]:
+        out["notes"].append("金利: " + "、".join(r["values"][0][:7] for r in out["rates"]) + " を更新")
+except Exception as e:  # noqa: BLE001
+    out["notes"].append(f"金利の取得に失敗（株価の更新は続行）: {e}")
+
 dd_now = latest / ath - 1
 out["status"] = f"最新 {latest_date} 終値 {latest}、最高値 {ath} から {dd_now*100:.1f}%"
 print(json.dumps(out, ensure_ascii=False, indent=1))
