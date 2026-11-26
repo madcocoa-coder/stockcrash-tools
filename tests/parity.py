@@ -85,6 +85,8 @@ async def open_tool(b, tool, kind, width, hash_=""):
         body = (ROOT / src).read_text(encoding="utf-8")
     else:
         body = src + '\n<script src="%s"></script>' % (ROOT / "dist" / "crash-tools.min.js").as_uri()
+        # 全画面ボタン（legacy にない追加機能）の行は隠して比べる。全画面の動きは tests/fullscreen.py で確認
+        body += '\n<style>.ct-fsbar{display:none!important}</style>'
     f = OUT / f"parity_{tool}_{kind}.html"
     f.write_text(PAGE.format(body=body), encoding="utf-8")
     pg = await b.new_page(viewport={"width": width, "height": 1000})

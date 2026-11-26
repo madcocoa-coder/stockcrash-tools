@@ -4,6 +4,7 @@ import { loadEvents, shortName } from '../core/events.js';
 import { SERIES, loadSeries } from '../series/registry.js';
 import { segHTML, bindSeg, chipHTML } from '../ui/controls.js';
 import { el, f1, svg, pathD, yGrid, xGrid, steps, onResize } from '../ui/chart.js';
+import { addFullscreen, fitHeight } from '../ui/fullscreen.js';
 
 export const COLORS = ['#b0352b', '#233b5e', '#1a8c80', '#b28430', '#6b4fa0', '#8a94a0'];
 const MAXSEL = 6, SPAN = 1100; // 1件あたり読む日数（3年＋α）
@@ -17,9 +18,9 @@ const HTML =
   '<div class="c-row"><span class="c-lab">比べる暴落</span><span class="c-chips"></span></div>' +
   '<div class="c-row"><select class="c-add"><option value="">＋ 暴落を追加</option></select>' +
   '<button class="btn c-sim" type="button">今回に近い下落を探す</button><button class="btn c-main" type="button">主な暴落に戻す</button></div>' +
-  '<div class="c-row"><span class="c-lab">表示期間</span>' + segHTML('seg c-range', null, RANGES, '365') + '</div>' +
+  '<div class="c-figwrap"><div class="c-row"><span class="c-lab">表示期間</span>' + segHTML('seg c-range', null, RANGES, '365') + '</div>' +
   '<div class="c-fig"><div class="c-msg">データを読み込み中…</div></div>' +
-  '<div class="c-read c-lab">' + READ0 + '</div>' +
+  '<div class="c-read c-lab">' + READ0 + '</div></div>' + // .c-figwrap まで（全画面の範囲）
   '<div class="c-wrap"><table><thead><tr><th>暴落</th><th>ピーク</th><th>最大下落</th><th>底まで</th><th>高値回復まで</th><th class="c-dayh">—</th></tr></thead><tbody></tbody></table></div>' +
   '<div class="c-note">横軸はピーク（直前の最高値）からの経過日数（暦日）、縦軸はピーク終値からの騰落率。S&amp;P500の日次終値（配当含まず）。1928年以降の、高値から10%以上下げた局面が対象。データは毎週更新。</div>';
 
@@ -47,6 +48,7 @@ export function mountCompare(host, { sheet }) {
   const R = host.firstChild, $ = (s) => R.querySelector(s), daily = SERIES.sp500;
   let EV = [], BY = {}, SEL = [], range = 365, cur = null, ALL = null;
   const CACHE = {};
+  const fs = addFullscreen($('.c-figwrap'), () => { if (SEL.length) draw(); });
 
   loadEvents(sheet).then(init).catch(() => { $('.c-lead').textContent = ERR; });
 
@@ -105,7 +107,8 @@ export function mountCompare(host, { sheet }) {
   }
 
   function draw() {
-    const box = $('.c-fig'), W = Math.max(300, box.clientWidth - 8), mob = W < 560, H = mob ? 320 : 420;
+    const box = $('.c-fig'), W = Math.max(300, box.clientWidth - 8), mob = W < 560;
+    const H = fs.isFull() ? fitHeight($('.c-figwrap'), box, 220) - 8 : mob ? 320 : 420; // 全画面中は画面の高さに合わせる
     const m = { l: mob ? 40 : 48, r: mob ? 10 : 16, t: 12, b: 26 };
     if (cur === 'auto') { // 継続中の最新日に縦線を合わせる
       const L0 = SEL.map((id) => BY[id]).filter((e) => e.on)[0], lp = L0 ? CACHE[L0.id] || [] : [];

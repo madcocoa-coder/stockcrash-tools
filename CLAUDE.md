@@ -14,6 +14,7 @@ src/
   series/sp500.js    S&P500 の取得元（月次・日次タブ）
   ui/chart.js        SVG 文字列の部品（el, pathD, yGrid, xGrid, logTicks, steps, onResize）
   ui/controls.js     セグメント、チップ
+  ui/fullscreen.js   全画面ボタン（Fullscreen API＋Android は横向き固定。使えない iPhone は position:fixed の重ね表示）
   views/list.js      一覧ビュー（mountList）
   views/compare.js   比較ビュー（mountCompare）
   main.js            [data-tool="crash"] を探して data-tab のビューを載せる。CSS を <style id="crash-tools-css"> で1回だけ入れる
@@ -26,6 +27,7 @@ tests/
   parity.py          legacy と統合版を同じデータ・同じ操作で開き、HTMLとスクショを突き合わせる
   smoke.py           ページを開いてエラーなし・表が出ることを確認（PC幅・スマホ幅）
   wp_sim.py          WP QUADS の広告差し込み・& の変換・テーマCSSを再現したページで確認
+  fullscreen.py      全画面ボタン（iPhone相当・Android相当 × 縦→横に回転 → 閉じる）
 legacy/              現行の埋め込み版（比較の基準。消さない）
 scripts/crash_update.py  週次更新スクリプト（claude.ai のスケジュールタスクが sha256 で照合して実行）
 ```
@@ -48,6 +50,7 @@ python3 tests/parity.py     # legacy と突き合わせ（--live で本物のシ
 python3 tests/smoke.py demo/index.html --mock --tab list
 python3 tests/smoke.py demo/compare.html --mock --tab compare
 python3 tests/wp_sim.py
+python3 tests/fullscreen.py
 npm run fixtures            # 合成データを作り直す（固定シードなので同じものができる）
 ```
 - Python の Playwright が同梱ブラウザを見つけられない環境では `CHROMIUM_PATH` を指定（なければ /opt/pw-browsers/chromium を自動で試す）
@@ -58,6 +61,8 @@ npm run fixtures            # 合成データを作り直す（固定シード�
 - データの定義・見出し名は変えない（HANDOFF.md 2.3）。列は見出し名で探す
 - 見た目と数値は legacy と同じに保つ。変えるときは parity.py の既知差分に理由つきで足す
 - 既知差分: legacy の一覧は 1970-01-01 の月次の点を落とす（`Date.UTC(1970,0,1)` が 0 で偽扱い）。統合版は描く
+- 追加機能（legacy にない）: 全画面ボタン。範囲は一覧が .ch-fig（チャート＋凡例＋詳細枠）、比較が .c-figwrap（表示期間＋チャート＋読み取り行）。
+  全画面中だけグラフの高さを画面に合わせる。parity.py ではボタンの行（.ct-fsbar）を隠して比べる
 - WordPress 側に置くのは div と script src だけ。本文に `<p>` や `&` を含むインラインJSを書かない（WP QUADS / wptexturize で壊れる）
 - `scripts/crash_update.py` を直したら claude.ai 側のスケジュールタスクの指示文（本体と sha256）も更新が必要。ユーザーに依頼する
 - 系列を足すときは `src/series/` に定義を1つ作り registry に登録する

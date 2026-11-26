@@ -4,6 +4,7 @@ import { loadEvents } from '../core/events.js';
 import { SERIES, loadSeries } from '../series/registry.js';
 import { segHTML, bindSeg } from '../ui/controls.js';
 import { el, f1, svg, pathD, yGrid, xGrid, logTicks, yearStep, onResize } from '../ui/chart.js';
+import { addFullscreen, fitHeight } from '../ui/fullscreen.js';
 
 const CLS = [['all', 'すべて'], ['bear', '弱気相場 -20%〜'], ['corr', '調整 -10〜20%']];
 const FROM = [['1871', '1871年〜'], ['1928', '1928年〜'], ['1970', '1970年〜'], ['2000', '2000年〜']];
@@ -15,12 +16,12 @@ const HTML =
   '<div class="ch-ctl"><span class="ch-lab">対象</span>' + segHTML('ch-seg', 'cls', CLS, 'all') +
   '<span class="ch-lab">期間</span>' + segHTML('ch-seg', 'from', FROM, '1871') + '</div>' +
   '<div class="ch-upd ch-lab"></div><div class="ch-stats"></div>' +
-  '<div class="ch-chart"><div class="ch-note">データを読み込み中…</div></div>' +
+  '<div class="ch-fig"><div class="ch-chart"><div class="ch-note">データを読み込み中…</div></div>' +
   '<div class="ch-leg"><span><i style="background:var(--bear)"></i>弱気相場の下落期間（ピーク→底）</span>' +
   '<span><i style="background:var(--corr)"></i>調整の下落期間</span>' +
   '<span><i style="background:var(--bear);opacity:.25"></i>回復期間（下段、点線は未回復）</span>' +
   '<span><i style="background:var(--line);height:2px;vertical-align:3px"></i>S&amp;P500（対数目盛）</span></div>' +
-  '<div class="ch-info">' + INFO0 + '</div>' +
+  '<div class="ch-info">' + INFO0 + '</div></div>' + // .ch-fig まで（全画面の範囲）
   '<div class="ch-ctl"><input type="search" placeholder="名称で絞り込み（例：ショック）"><span class="ch-lab">見出しをタップで並び替え</span></div>' +
   '<div class="ch-wrap"><table><thead><tr>' + COLS.map(([k, l]) => '<th data-s="' + k + '">' + l + '</th>').join('') +
   '</tr></thead><tbody></tbody></table></div>' +
@@ -36,6 +37,7 @@ export function mountList(host, { sheet }) {
   const R = host.firstChild, $ = (s) => R.querySelector(s);
   const st = { cls: 'all', from: 1871, sort: 'pk', dir: 1, q: '', sel: null };
   let EV = [], PX = [];
+  const fs = addFullscreen($('.ch-fig'), () => chart());
 
   Promise.all([loadEvents(sheet), loadSeries(sheet, SERIES.sp500, 'monthly')])
     .then(([ev, px]) => { EV = ev.map((e) => ({ ...e })); PX = px; init(); })
@@ -84,7 +86,7 @@ export function mountList(host, { sheet }) {
 
   function chart() {
     const box = $('.ch-chart'), W = Math.max(320, box.clientWidth || 800), mob = W < 560;
-    const m = { l: mob ? 38 : 50, r: 10, t: 10, b: 24 }, PH = mob ? 300 : 400;
+    const m = { l: mob ? 38 : 50, r: 10, t: 10, b: 24 };
     const x0 = Date.UTC(st.from, 0, 1), x1 = Math.max(PX.length ? PX[PX.length - 1][0] : Date.now(), Date.now() - 30 * DAY);
     const pts = PX.filter((p) => p[0] >= x0);
     if (!pts.length) { box.innerHTML = ''; return; }
@@ -100,7 +102,9 @@ export function mountList(host, { sheet }) {
       ends[L] = e.rc || x1;
       e._ln = L;
     });
-    const LH = mob ? 6 : 7, H = PH + ends.length * (LH + 2) + 18, bot = PH - m.b;
+    const LH = mob ? 6 : 7, TL = ends.length * (LH + 2) + 18;
+    // 全画面中は画面の高さに合わせる（下段のタイムライン分を引く）
+    const PH = fs.isFull() ? Math.max(200, fitHeight($('.ch-fig'), box, 200) - TL) : mob ? 300 : 400, H = PH + TL, bot = PH - m.b;
     const X = (t) => m.l + (t - x0) / (x1 - x0) * (W - m.l - m.r);
     const Y = (v) => m.t + (hi - Math.log10(v)) / (hi - lo) * (PH - m.t - m.b);
 

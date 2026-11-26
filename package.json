@@ -7,7 +7,7 @@
     "build": "node build.mjs",
     "build:dev": "node build.mjs --dev",
     "fixtures": "python3 tests/fixtures/make_fixtures.py",
-    "test": "python3 tests/parity.py && python3 tests/smoke.py demo/index.html --mock --tab list && python3 tests/smoke.py demo/compare.html --mock --tab compare"
+    "test": "python3 tests/parity.py && python3 tests/smoke.py demo/index.html --mock --tab list && python3 tests/smoke.py demo/compare.html --mock --tab compare && python3 tests/wp_sim.py && python3 tests/fullscreen.py"
   },
   "devDependencies": {
     "esbuild": "^0.28.2"
