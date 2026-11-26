@@ -1,0 +1,116 @@
+<div id="ch-root" data-sheet="1JP-4PJimOphXB9pTvG8xCW4F12Jn5FrnHVUiT4iRVFM">
+<style>
+#ch-root{--bear:#b0352b;--corr:#d4877f;--line:#233b5e;--muted:#5f6873;--bd:#d7dbe0;font-size:15px;line-height:1.6;color:inherit}
+#ch-root *{box-sizing:border-box}
+#ch-root .ch-ctl{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 10px}
+#ch-root .ch-seg{display:inline-flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+#ch-root .ch-seg button{all:unset;cursor:pointer;padding:5px 11px;font-size:13px;color:var(--muted);background:#fff}
+#ch-root .ch-seg button+button{border-left:1px solid var(--bd)}
+#ch-root .ch-seg button.on{background:var(--line);color:#fff}
+#ch-root .ch-lab{font-size:12px;color:var(--muted)}
+#ch-root .ch-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:0 0 12px}
+#ch-root .ch-stat{border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
+#ch-root .ch-stat b{display:block;font-size:20px;line-height:1.3}
+#ch-root .ch-stat span{font-size:12px;color:var(--muted)}
+#ch-root svg{width:100%;height:auto;display:block;touch-action:pan-y}
+#ch-root .ch-band{cursor:pointer}
+#ch-root .ch-band:hover,#ch-root .ch-band.sel{stroke:#111;stroke-width:1}
+#ch-root .ch-leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin:4px 0 0}
+#ch-root .ch-leg i{display:inline-block;width:12px;height:10px;margin-right:4px;vertical-align:-1px}
+#ch-root .ch-info{min-height:52px;border-left:4px solid var(--bd);padding:6px 10px;margin:8px 0 14px;font-size:13px;background:#f6f7f9}
+#ch-root .ch-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--bd);border-radius:8px;max-height:640px;overflow-y:auto}
+#ch-root table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px;margin:0}
+#ch-root th,#ch-root td{padding:6px 8px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}
+#ch-root th{position:sticky;top:0;background:#eceef1;cursor:pointer;user-select:none;z-index:1}
+#ch-root th:first-child,#ch-root td:first-child{text-align:left;white-space:normal;min-width:220px}
+#ch-root th.asc:after{content:" ▲";font-size:10px}
+#ch-root th.desc:after{content:" ▼";font-size:10px}
+#ch-root tr.sel td{background:#fff7d6}
+#ch-root tbody tr{cursor:pointer}
+#ch-root .tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;color:#fff}
+#ch-root .tag.b{background:var(--bear)}#ch-root .tag.c{background:var(--corr)}
+#ch-root .ongo{color:var(--bear);font-weight:bold}
+#ch-root .ch-upd{margin:0 0 6px}
+#ch-root .ch-note{font-size:12px;color:var(--muted);margin-top:8px}
+#ch-root input[type=search]{padding:5px 8px;border:1px solid var(--bd);border-radius:8px;font-size:13px;min-width:160px}
+</style>
+<div class="ch-ctl">
+<span class="ch-lab">対象</span><span class="ch-seg" data-k="cls"><button data-v="all" class="on">すべて</button><button data-v="bear">弱気相場 -20%〜</button><button data-v="corr">調整 -10〜20%</button></span>
+<span class="ch-lab">期間</span><span class="ch-seg" data-k="from"><button data-v="1871" class="on">1871年〜</button><button data-v="1928">1928年〜</button><button data-v="1970">1970年〜</button><button data-v="2000">2000年〜</button></span>
+</div>
+<div class="ch-upd ch-lab"></div>
+<div class="ch-stats"></div>
+<div class="ch-chart"><div class="ch-note">データを読み込み中…</div></div>
+<div class="ch-leg"><span><i style="background:var(--bear)"></i>弱気相場の下落期間（ピーク→底）</span><span><i style="background:var(--corr)"></i>調整の下落期間</span><span><i style="background:var(--bear);opacity:.25"></i>回復期間（下段、点線は未回復）</span><span><i style="background:var(--line);height:2px;vertical-align:3px"></i>S&amp;P500（対数目盛）</span></div>
+<div class="ch-info">帯や表の行をタップすると詳細を表示</div>
+<div class="ch-ctl"><input type="search" placeholder="名称で絞り込み（例：ショック）"><span class="ch-lab">見出しをタップで並び替え</span></div>
+<div class="ch-wrap"><table><thead><tr><th data-s="name">出来事</th><th data-s="dd">下落率</th><th data-s="pk">ピーク</th><th data-s="tr">底</th><th data-s="fall">下落期間</th><th data-s="rec">回復期間</th><th data-s="tot">全期間</th><th data-s="rc">回復日</th></tr></thead><tbody></tbody></table></div>
+<div class="ch-note">S&amp;P500の終値ベース（配当含まず・インフレ調整なし）。1927年以前はShillerの月次平均値。回復＝ピークの値を終値で取り戻した日。弱気相場は20%以上の戻りで終わりとみなして区切る。出典：Robert Shiller、Yahoo Finance、Morningstar。</div>
+<script>
+(function(){
+var R=document.getElementById('ch-root');if(!R)return;
+var DAY=864e5,st={cls:'all',from:1871,sort:'pk',dir:1,q:'',sel:null},EV=[],PX=[];
+function csv(t){var o=[],r=[],f='',q=false;t=t.replace(/\r/g,'');for(var i=0;i<t.length;i++){var c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){r.push(f);f=''}else if(c=='\n'){r.push(f);o.push(r);r=[];f=''}else f+=c}if(f||r.length){r.push(f);o.push(r)}return o}
+function esc(s){return String(s).replace(/[\x26<>"']/g,function(c){return '\x26#'+c.charCodeAt(0)+';'})}
+function num(s){s=(s||'').replace(/[,\s%]/g,'');return s===''?NaN:+s}
+function dt(s){s=(s||'').trim().replace(/\//g,'-');if(!s)return null;var m=s.match(/^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?/);return m?Date.UTC(+m[1],+m[2]-1,+(m[3]||1)):null}
+function load(){
+ var D=window.CH_DATA;if(D){init(D.events,D.prices);return}
+ Promise.all([257873827,886500007].map(function(g){return fetch('https://docs.google.com/spreadsheets/d/'+R.dataset.sheet+'/gviz/tq?tqx=out:csv\x26gid='+g,{cache:'no-store'}).then(function(r){if(!r.ok)throw r.status;return r.text()})})).then(function(a){init(a[0],a[1])}).catch(function(){R.querySelector('.ch-chart').innerHTML='<div class="ch-note">データを読み込めませんでした。時間をおいて再読み込みしてください。<\/div>'})}
+function init(et,pt){
+ var e=csv(et),h=e.shift(),ix=function(n){return h.indexOf(n)};
+ var I={id:ix('ID'),n:ix('名称'),pd:ix('ピーク日'),pv:ix('ピーク値'),td:ix('底日'),tv:ix('底値'),rd:ix('回復日'),g:ix('グループ'),gr:ix('データ')};
+ e.forEach(function(r){var pk=dt(r[I.pd]),tr=dt(r[I.td]),pv=num(r[I.pv]),tv=num(r[I.tv]);if(!pk||!tr||!(pv>0)||!(tv>0))return;
+  var rc=dt(r[I.rd]),dd=tv/pv-1;EV.push({id:r[I.id],name:esc(r[I.n]),pk:pk,tr:tr,rc:rc,pv:pv,tv:tv,dd:dd,bear:dd<=-0.2,grp:esc(r[I.g]||''),mon:(r[I.gr]||'').indexOf('月次')>=0,fall:(tr-pk)/DAY,rec:rc?(rc-tr)/DAY:null,tot:rc?(rc-pk)/DAY:null})});
+ var p=csv(pt);p.shift();p.forEach(function(r){var d=dt(r[0]),v=num(r[1]);if(d&&v>0)PX.push([d,v])});PX.sort(function(a,b){return a[0]-b[0]});
+ R.querySelectorAll('.ch-seg').forEach(function(s){s.addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;s.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b)});var k=s.dataset.k;st[k]=k=='from'?+b.dataset.v:b.dataset.v;draw()})});
+ R.querySelector('input[type=search]').addEventListener('input',function(){st.q=this.value.trim();table()});
+ R.querySelectorAll('th').forEach(function(th){th.addEventListener('click',function(){var s=th.dataset.s;st.dir=st.sort==s?-st.dir:(s=='dd'?1:(s=='name'?1:-1));if(s=='pk'&&st.sort!='pk')st.dir=1;st.sort=s;table()})});
+ window.addEventListener('resize',function(){clearTimeout(R._t);R._t=setTimeout(chart,150)});
+ var u=R.querySelector('.ch-upd');if(u&&PX.length)u.textContent='データ：S'+String.fromCharCode(38)+'P500終値ベース・'+fd(PX[PX.length-1][0],true)+'まで反映（Googleシートから自動更新）';
+ draw()}
+function vis(){var f=Date.UTC(st.from,0,1);return EV.filter(function(e){return (st.cls=='all'||(st.cls=='bear')==e.bear)&&(e.rc||Infinity)>=f})}
+function fd(t,m){var d=new Date(t);return d.getUTCFullYear()+'年'+(d.getUTCMonth()+1)+'月'+(m?'':d.getUTCDate()+'日')}
+function dur(x){if(x==null)return'—';if(x<60)return Math.round(x)+'日';var m=Math.round(x/30.44);return m<24?m+'か月':(Math.floor(m/12)+'年'+(m%12?m%12+'か月':''))}
+function pct(x){return (x*100).toFixed(1)+'%'}
+function med(a){a=a.slice().sort(function(x,y){return x-y});var n=a.length;return n?(n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2):null}
+function draw(){stats();chart();table()}
+function stats(){var v=vis(),done=v.filter(function(e){return e.rc}),on=v.filter(function(e){return !e.rc});
+ var w=v.reduce(function(a,e){return !a||e.dd<a.dd?e:a},null);
+ R.querySelector('.ch-stats').innerHTML=[[v.length+'回','件数'],[v.length?pct(v.reduce(function(s,e){return s+e.dd},0)/v.length):'—','平均下落率'],[dur(med(v.map(function(e){return e.fall}))),'下落期間（中央値）'],[dur(med(done.map(function(e){return e.rec}))),'回復期間（中央値）'],[w?pct(w.dd):'—',w?'最大: '+w.name:'最大下落']].map(function(s){return '<div class="ch-stat"><b>'+s[0]+'<\/b><span>'+s[1]+'<\/span><\/div>'}).join('')+(on.length?'<div class="ch-stat"><b class="ongo">'+on.length+'件<\/b><span>継続中: '+on.map(function(e){return e.name}).join('、')+'<\/span><\/div>':'')}
+function chart(){
+ var box=R.querySelector('.ch-chart'),W=Math.max(320,box.clientWidth||800),mob=W<560,H=mob?300:400,m={l:mob?38:50,r:10,t:10,b:24};
+ var x0=Date.UTC(st.from,0,1),x1=Math.max(PX.length?PX[PX.length-1][0]:Date.now(),Date.now()-30*DAY),pts=PX.filter(function(p){return p[0]>=x0});
+ if(!pts.length){box.innerHTML='';return}
+ var lo=Infinity,hi=0;pts.forEach(function(p){lo=Math.min(lo,p[1]);hi=Math.max(hi,p[1])});lo=Math.log10(lo*0.85);hi=Math.log10(hi*1.15);
+ var ev=vis().slice().sort(function(a,b){return a.pk-b.pk}),ends=[];
+ ev.forEach(function(e){var en=e.rc||x1,L=0;while(ends[L]!=null&&ends[L]>=e.pk)L++;ends[L]=en;e._ln=L});
+ var LH=mob?6:7,lanes=ends.length,TL=lanes*(LH+2)+18,PH=H;H=PH+TL;
+ var X=function(t){return m.l+(t-x0)/(x1-x0)*(W-m.l-m.r)},Y=function(v){return m.t+(hi-Math.log10(v))/(hi-lo)*(PH-m.t-m.b)},bot=PH-m.b,s='';
+ for(var k=Math.floor(lo);k<=Math.ceil(hi);k++)[1,2,5].forEach(function(f){var v=f*Math.pow(10,k),l=Math.log10(v);if(l<lo||l>hi)return;if(f!=1&&(hi-lo)>2.2)return;var y=Y(v).toFixed(1);s+='<line x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+y+'" y2="'+y+'" stroke="#eee"/><text x="'+(m.l-4)+'" y="'+y+'" dy="4" font-size="10" text-anchor="end" fill="#888">'+v.toLocaleString()+'<\/text>'});
+ var y0=new Date(x0).getUTCFullYear(),y1=new Date(x1).getUTCFullYear(),span=y1-y0,step=span>100?20:span>50?10:span>25?5:2;
+ for(var y=Math.ceil(y0/step)*step;y<=y1;y+=step){var xx=X(Date.UTC(y,0,1)).toFixed(1);s+='<line x1="'+xx+'" x2="'+xx+'" y1="'+m.t+'" y2="'+(H-4)+'" stroke="#f3f3f3"/><text x="'+xx+'" y="'+(PH-8)+'" font-size="10" text-anchor="middle" fill="#888">'+y+'<\/text>'}
+ s+='<text x="'+m.l+'" y="'+(PH+8)+'" font-size="10" fill="#888">下落（濃）→ 回復（淡）のタイムライン<\/text>';
+ ev.forEach(function(e){var a=X(Math.max(e.pk,x0)),b=X(Math.max(e.tr,x0)),c=X(e.rc||x1),col=e.bear?'var(--bear)':'var(--corr)',sel=st.sel==e.id?' sel':'',ly=PH+14+e._ln*(LH+2);
+  if(e.tr>=x0)s+='<rect class="ch-band'+sel+'" data-id="'+e.id+'" x="'+a.toFixed(1)+'" y="'+m.t+'" width="'+Math.max(1.5,b-a).toFixed(1)+'" height="'+(bot-m.t)+'" fill="'+col+'" fill-opacity="'+(e.bear?.35:.28)+'"/>';
+  if(e.tr>=x0)s+='<rect class="ch-band'+sel+'" data-id="'+e.id+'" x="'+a.toFixed(1)+'" y="'+ly+'" width="'+Math.max(1.5,b-a).toFixed(1)+'" height="'+LH+'" fill="'+col+'"/>';
+  s+='<rect class="ch-band'+sel+'" data-id="'+e.id+'" x="'+b.toFixed(1)+'" y="'+ly+'" width="'+Math.max(1,c-b).toFixed(1)+'" height="'+LH+'" fill="'+col+'" fill-opacity=".25"'+(e.rc?'':' stroke-dasharray="2 2" stroke="'+col+'"')+'/>';
+  if(sel)s+='<rect x="'+a.toFixed(1)+'" y="'+m.t+'" width="'+Math.max(1.5,c-a).toFixed(1)+'" height="'+(bot-m.t)+'" fill="#facc15" fill-opacity=".18" stroke="#ca8a04" pointer-events="none"/>'});
+ var d='';pts.forEach(function(p,i){d+=(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)});
+ s+='<path d="'+d+'" fill="none" stroke="var(--line)" stroke-width="1.4" pointer-events="none"/>';
+ box.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="S\x26P500と暴落期間">'+s+'<\/svg>';
+ box.querySelector('svg').addEventListener('click',function(ev){var r=ev.target.closest('.ch-band');if(r)pick(r.dataset.id,true)})}
+function info(e){var el=R.querySelector('.ch-info');if(!e){el.innerHTML='帯や表の行をタップすると詳細を表示';el.style.borderLeftColor='';return}
+ el.style.borderLeftColor=e.bear?'var(--bear)':'var(--corr)';
+ el.innerHTML='<b>'+e.name+'<\/b> <span class="tag '+(e.bear?'b':'c')+'">'+(e.bear?'弱気相場':'調整')+'<\/span>'+(e.grp?' <span class="ch-lab">'+e.grp+'<\/span>':'')+'<br>'+fd(e.pk,e.mon)+'（'+e.pv.toLocaleString()+'）→ 底 '+fd(e.tr,e.mon)+'（'+e.tv.toLocaleString()+'）<b> '+pct(e.dd)+'<\/b>／下落 '+dur(e.fall)+'・回復 '+(e.rc?dur(e.rec)+'（'+fd(e.rc,e.mon)+'）':'<span class="ongo">未回復<\/span>')}
+function pick(id,fromChart){st.sel=st.sel==id&&!fromChart?null:id;var e=EV.filter(function(x){return x.id==st.sel})[0];info(e);chart();
+ R.querySelectorAll('tbody tr').forEach(function(tr){var on=tr.dataset.id==st.sel;tr.classList.toggle('sel',on);if(on&&fromChart){var w=R.querySelector('.ch-wrap');w.scrollTop=tr.offsetTop-40}})}
+function table(){
+ var k=st.sort,dir=st.dir,v=vis().filter(function(e){return !st.q||e.name.indexOf(st.q)>=0||e.grp.indexOf(st.q)>=0});
+ v.sort(function(a,b){var x=a[k],y=b[k];if(k=='name')return dir*x.localeCompare(y,'ja');if(x==null)x=Infinity;if(y==null)y=Infinity;return dir*(x-y)});
+ R.querySelectorAll('th').forEach(function(th){th.className=th.dataset.s==k?(dir>0?'asc':'desc'):''});
+ R.querySelector('tbody').innerHTML=v.map(function(e){return '<tr data-id="'+e.id+'"'+(st.sel==e.id?' class="sel"':'')+'><td>'+e.name+' <span class="tag '+(e.bear?'b':'c')+'">'+(e.bear?'弱気':'調整')+'<\/span><\/td><td><b>'+pct(e.dd)+'<\/b><\/td><td>'+fd(e.pk,e.mon)+'<\/td><td>'+fd(e.tr,e.mon)+'<\/td><td>'+dur(e.fall)+'<\/td><td>'+dur(e.rec)+'<\/td><td>'+dur(e.tot)+'<\/td><td>'+(e.rc?fd(e.rc,e.mon):'<span class="ongo">未回復<\/span>')+'<\/td><\/tr>'}).join('')||'<tr><td colspan="8">該当なし<\/td><\/tr>';
+ R.querySelectorAll('tbody tr[data-id]').forEach(function(tr){tr.addEventListener('click',function(){pick(tr.dataset.id,false)})})}
+load()})();
+</script>
+</div>
