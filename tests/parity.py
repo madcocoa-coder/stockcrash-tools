@@ -14,6 +14,8 @@ import mock  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LIVE = "--live" in sys.argv
+if LIVE:
+    mock.serve()  # file:// だと gviz が CORS で断るので http で配る
 OUT = ROOT / "tests" / "out"
 SHEET = "1JP-4PJimOphXB9pTvG8xCW4F12Jn5FrnHVUiT4iRVFM"
 PAGE = """<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -84,7 +86,7 @@ async def open_tool(b, tool, kind, width, hash_=""):
     if kind == "legacy":
         body = (ROOT / src).read_text(encoding="utf-8")
     else:
-        body = src + '\n<script src="%s"></script>' % (ROOT / "dist" / "crash-tools.min.js").as_uri()
+        body = src + '\n<script src="%s"></script>' % mock.url_for(ROOT / "dist" / "crash-tools.min.js")
         # 全画面ボタン（legacy にない追加機能）の行は隠して比べる。全画面の動きは tests/fullscreen.py で確認
         body += '\n<style>.ct-fsbar{display:none!important}</style>'
     f = OUT / f"parity_{tool}_{kind}.html"
@@ -94,7 +96,7 @@ async def open_tool(b, tool, kind, width, hash_=""):
     pg.on("pageerror", lambda e: errs.append(str(e)))
     if not LIVE:
         await mock.install(pg)
-    await pg.goto(f.as_uri() + hash_)
+    await pg.goto(mock.url_for(f) + hash_)
     await pg.wait_for_function("r => { const R = document.querySelector(r); return R && R.querySelector('tbody tr'); }", arg=root)
     await pg.wait_for_timeout(300)
     return pg, root, errs
@@ -139,6 +141,8 @@ async def run_tool(b, tool, width, steps, hash_=""):
             for pg, r in ((L, lr), (N, nr)):
                 await pg.evaluate(f"r => ({js})(document.querySelector(r))", r)
                 await pg.wait_for_timeout(250 if name.startswith("similar") else 60)
+                if LIVE:  # 本物のシートは追加の取得に0.5〜1秒かかる。取得が終わる前に撮ると左右で揺れる
+                    await pg.wait_for_timeout(1500)
             if name.startswith("similar"):
                 for pg in (L, N):
                     await pg.wait_for_function("() => !/計算中/.test(document.querySelector('.c-sim').textContent)")

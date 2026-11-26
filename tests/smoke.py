@@ -19,7 +19,9 @@ CHECK = {  # タブごとに「中身が出ているか」を見る要素
 
 async def run(target, tab, use_mock):
     out = pathlib.Path(__file__).parent / "out"; out.mkdir(exist_ok=True)
-    url = target if target.startswith("http") else pathlib.Path(target).resolve().as_uri()
+    if not target.startswith("http") and not use_mock:
+        mock.serve()  # file:// だと gviz が CORS で断るので http で配る
+    url = target if target.startswith("http") else mock.url_for(target)
     ok = True
     async with async_playwright() as p:
         b = await mock.launch(p)

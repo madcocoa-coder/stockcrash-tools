@@ -28,6 +28,7 @@ tests/
   smoke.py           ページを開いてエラーなし・表が出ることを確認（PC幅・スマホ幅）
   wp_sim.py          WP QUADS の広告差し込み・& の変換・テーマCSSを再現したページで確認
   fullscreen.py      全画面ボタン（iPhone相当・Android相当 × 縦→横に回転 → 閉じる）
+  prod_sim.py        本番ページの legacy 埋め込みを統合版に差し替えて、本番のテーマ・広告込みで開く（要ネット）
 legacy/              現行の埋め込み版（比較の基準。消さない）
 scripts/crash_update.py  週次更新スクリプト（claude.ai のスケジュールタスクが sha256 で照合して実行）
 ```
@@ -51,10 +52,12 @@ python3 tests/smoke.py demo/index.html --mock --tab list
 python3 tests/smoke.py demo/compare.html --mock --tab compare
 python3 tests/wp_sim.py
 python3 tests/fullscreen.py
+python3 tests/prod_sim.py   # 本番相当（gomi-investor.com・docs.google.com に接続できる環境で）
 npm run fixtures            # 合成データを作り直す（固定シードなので同じものができる）
 ```
 - Python の Playwright が同梱ブラウザを見つけられない環境では `CHROMIUM_PATH` を指定（なければ /opt/pw-browsers/chromium を自動で試す）
 - テストの出力（スクショ・差分）は tests/out/（gitignore）
+- 本物のシートを読むテスト（parity --live、smoke の --mock なし、prod_sim）は、リポジトリを http://127.0.0.1 で配って開く。file:// だとオリジンが null になり gviz が CORS で断るため
 
 ## 守ること
 
