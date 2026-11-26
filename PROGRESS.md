@@ -6,7 +6,8 @@
 - `tests/smoke.py`（--mock なし）: 一覧 82行・比較 5行、PC幅・スマホ幅 OK
 - 新規 `tests/prod_sim.py`: 本番の一覧ページを取得し、legacy の埋め込みを統合版（list / compare）に差し替えて、本番のテーマ・広告込みで開く → 4通りとも OK（統合版起因のエラーなし）
 - テストの直し: file:// で開くとページのオリジンが null になり、gviz が CORS で断る（本番では起きない）。本物のシートを読むテストはリポジトリを http://127.0.0.1 で配るようにした（`mock.serve()` / `mock.url_for()`）。parity.py の --live は、追加の取得（0.5〜1秒）を待ってから撮るようにした
-- `v1.0.0` タグ（main 3b1eff3、dist は再ビルドと同一）を push。jsDelivr の配信を確認
+- `v1.0.0` タグの push は claude.ai の作業環境からは拒否された（git プロキシが 403）。タグはユーザーが GitHub の Releases から作る（main の dist は再ビルドと同一を確認済み）
+- タグを作ったら `https://cdn.jsdelivr.net/gh/madcocoa-coder/stockcrash-tools@v1.0.0/dist/crash-tools.min.js` が返ることを確認
 - 残り: ユーザーが WordPress の埋め込みを差し替え（一覧ページは data-tab="list"、比較ページは data-tab="compare"）。実機（iPhone・Android）で全画面ボタンを確認
 
 ## 2026-11-26 要望: スマホ用の全画面表示ボタン
