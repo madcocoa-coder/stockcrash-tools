@@ -17,7 +17,8 @@ src/
   ui/fullscreen.js   全画面ボタン（Fullscreen API＋Android は横向き固定。使えない iPhone は position:fixed の重ね表示）
   views/list.js      一覧ビュー（mountList）
   views/compare.js   比較ビュー（mountCompare）
-  main.js            [data-tool="crash"] を探して data-tab のビューを載せる。CSS を <style id="crash-tools-css"> で1回だけ入れる
+  main.js            [data-tool="crash"] を探して「暴落の一覧」「重ねて比較」の2タブを載せる（v1.1.0）。data-tab は最初に開くタブ、#cmp= があれば比較から。
+                     2つ目のタブは初めて開いたときに読み込む。一覧の「この暴落を『重ねて比較』で見る」→ 比較タブへ切り替えて add(id)。CSS を <style id="crash-tools-css"> で1回だけ入れる
   styles.css         ルート配下にスコープ。:is(#crash-tools,[data-tool]) で id 1個分の詳細度にしてテーマCSSに負けないようにしている
 build.mjs            esbuild。CSS は minify して文字列としてJSに埋め込む → dist/crash-tools.min.js（コミットする）
 demo/                index.html（一覧）・compare.html（比較）。WordPress と同じマークアップ
@@ -28,7 +29,8 @@ tests/
   smoke.py           ページを開いてエラーなし・表が出ることを確認（PC幅・スマホ幅）
   wp_sim.py          WP QUADS の広告差し込み・& の変換・テーマCSSを再現したページで確認
   fullscreen.py      全画面ボタン（iPhone相当・Android相当 × 縦→横に回転 → 閉じる）
-  prod_sim.py        本番ページの legacy 埋め込みを統合版に差し替えて、本番のテーマ・広告込みで開く（要ネット）
+  prod_sim.py        本番ページの埋め込み（legacy でも公開中の統合版でも）を手元のビルドに差し替えて、本番のテーマ・広告込みで開く（要ネット）
+  tabs.py            タブ統合（一覧→比較へ送る、比較ページ、共有URL）
 legacy/              現行の埋め込み版（比較の基準。消さない）
 scripts/crash_update.py  週次更新スクリプト（claude.ai のスケジュールタスクが sha256 で照合して実行）
 ```
@@ -37,9 +39,9 @@ scripts/crash_update.py  週次更新スクリプト（claude.ai のスケジュ
 
 ```html
 <div data-tool="crash" data-tab="list" data-sheet="1JP-4PJimOphXB9pTvG8xCW4F12Jn5FrnHVUiT4iRVFM"></div>
-<script src="https://cdn.jsdelivr.net/gh/madcocoa-coder/stockcrash-tools@v1.0.2/dist/crash-tools.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/madcocoa-coder/stockcrash-tools@v1.1.0/dist/crash-tools.min.js" defer></script>
 ```
-- `data-tab` は `list` か `compare`。`data-sheet` を省くと既定のシート
+- `data-tab` は `list` か `compare`（最初に開くタブ。どちらのページでも両方のタブが使える）。`data-sheet` を省くと既定のシート
 - バージョンはタグで固定。`@latest` やブランチ指定は使わない
 
 ## コマンド
@@ -52,6 +54,7 @@ python3 tests/smoke.py demo/index.html --mock --tab list
 python3 tests/smoke.py demo/compare.html --mock --tab compare
 python3 tests/wp_sim.py
 python3 tests/fullscreen.py
+python3 tests/tabs.py
 python3 tests/prod_sim.py   # 本番相当（gomi-investor.com・docs.google.com に接続できる環境で）
 npm run fixtures            # 合成データを作り直す（固定シードなので同じものができる）
 ```
@@ -64,6 +67,8 @@ npm run fixtures            # 合成データを作り直す（固定シード�
 - データの定義・見出し名は変えない（HANDOFF.md 2.3）。列は見出し名で探す
 - 見た目と数値は legacy と同じに保つ。変えるときは parity.py の既知差分に理由つきで足す
 - 既知差分: legacy の一覧は 1970-01-01 の月次の点を落とす（`Date.UTC(1970,0,1)` が 0 で偽扱い）。統合版は描く
+- 追加機能（legacy にない）: タブ（.ct-tabs）と「比較へ送る」ボタン（.ch-act、1928年以降の日次の暴落だけ）。parity.py では隠して比べる
+- テーマ（Magazine Pro）は b・strong などに Raleway などを当てるので、ツール内は `*{font-family:inherit}` で全部そろえる（v1.1.0）
 - 追加機能（legacy にない）: 全画面ボタン。範囲は一覧が .ch-fig（チャート＋凡例＋詳細枠）、比較が .c-figwrap（表示期間＋チャート＋読み取り行）。
   全画面中だけグラフの高さを画面に合わせる。parity.py ではボタンの行（.ct-fsbar）を隠して比べる
 - 表示ラベル: 20%以上の下落は「暴落」、10〜20%は「調整」（v1.0.2 でユーザー決定。旧「弱気相場／弱気」）。データの定義と内部の名前（bear など）は変えていない。parity.py は legacy に同じ置き換え（LEGACY_LABELS）を当てて比べる

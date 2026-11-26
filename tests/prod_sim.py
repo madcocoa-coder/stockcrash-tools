@@ -1,6 +1,6 @@
 """本番相当テスト: 本番ページのHTMLを取得し、legacy の埋め込みを統合版に差し替えてローカルで開く。
 使い方: python tests/prod_sim.py [ページURL]   （先に npm run build。gomi-investor.com と docs.google.com に接続できる環境で）
-- 本番ページ内の legacy 埋め込み（div#ch-root または div#cmp-root の一式）を、統合版の <div data-tool="crash" ...> に置き換える
+- 本番ページ内の埋め込み（legacy の div#ch-root / div#cmp-root 一式、または公開中の統合版）を、手元でビルドした統合版に置き換える
 - 一覧タブ・比較タブの2通りを作り、<base href> で本番のCSS・広告（WP QUADS）を読み込んだ状態で開く
 - 合格: 表の行が出る／統合版のスクリプトに起因するエラーがない。PC幅・スマホ幅
 """
@@ -18,10 +18,13 @@ SHEET = "1JP-4PJimOphXB9pTvG8xCW4F12Jn5FrnHVUiT4iRVFM"
 
 
 def legacy_span(html):
-    """legacy 埋め込みの開始と終了の位置。どちらのツールも最後は '})();\\n</script>\\n</div>' で閉じる"""
+    """ページ内の埋め込み（legacy の div#ch-root / div#cmp-root 一式、または統合版の div[data-tool] ＋ script src）の開始と終了の位置"""
+    m = re.search(r'<div data-tool="crash"[^>]*></div>\s*<script[^>]*crash-tools[^>]*></script>', html)
+    if m:
+        return m.start(), m.end()
     m = re.search(r'<div id="(ch-root|cmp-root)"', html)
     if not m:
-        raise SystemExit("legacy の埋め込みがページに見つからない")
+        raise SystemExit("ツールの埋め込みがページに見つからない")
     end = html.index("</script>", html.index("})();", m.start()))
     end = html.index("</div>", end) + len("</div>")
     return m.start(), end

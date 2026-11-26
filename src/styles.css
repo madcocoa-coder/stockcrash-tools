@@ -8,7 +8,8 @@
    Windows は游ゴシックより小さい文字が潰れにくいメイリオを優先 */
 :is(#crash-tools,[data-tool]) :is(.ch-root,.cmp-root){font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN",Meiryo,"Yu Gothic UI","Noto Sans CJK JP","Noto Sans JP",system-ui,sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:normal;letter-spacing:normal;font-style:normal}
 :is(#crash-tools,[data-tool]) :is(.ch-root,.cmp-root) :is(b,strong,th){font-weight:700}
-:is(#crash-tools,[data-tool]) :is(.ch-root,.cmp-root) :is(select,input,button){font-family:inherit}
+:is(#crash-tools,[data-tool]) :is(.ch-root,.cmp-root) *{font-family:inherit}
+/* ↑テーマが b・strong・th・button などに別のフォント（明朝など）を当てていても、ツール内は上のフォントにそろえる */
 
 /* 一覧 */
 :is(#crash-tools,[data-tool]) .ch-root{--bear:#b0352b;--corr:#d4877f;--line:#233b5e;--muted:#5f6873;--bd:#d7dbe0;font-size:15px;line-height:1.6;color:inherit}
@@ -86,3 +87,15 @@
 :is(#crash-tools,[data-tool]) .ct-full .ch-info{margin-bottom:0;min-height:calc(3.2em + 12px)}
 @media (orientation:portrait) and (max-width:700px){:is(#crash-tools,[data-tool]) .ct-full .ct-fshint{display:inline}}
 html.ct-noscroll,html.ct-noscroll body{overflow:hidden}
+
+/* タブ（一覧・比較）。v1.1.0 */
+:is(#crash-tools,[data-tool]) .ct-tabs{display:flex;gap:4px;border-bottom:2px solid #d7dbe0;margin:0 0 14px;font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN",Meiryo,"Yu Gothic UI","Noto Sans CJK JP","Noto Sans JP",system-ui,sans-serif}
+:is(#crash-tools,[data-tool]) .ct-tabs button{all:unset;cursor:pointer;padding:9px 16px 8px;font-size:15px;font-weight:700;line-height:1.4;color:#5f6873;border-bottom:3px solid transparent;margin-bottom:-2px;border-radius:6px 6px 0 0}
+:is(#crash-tools,[data-tool]) .ct-tabs button:hover{background:#f4f5f7}
+:is(#crash-tools,[data-tool]) .ct-tabs button.on{color:#14161a;border-bottom-color:#b0352b}
+:is(#crash-tools,[data-tool]) .ct-tabs button:focus-visible{outline:2px solid #233b5e;outline-offset:2px}
+:is(#crash-tools,[data-tool]) .ct-pane[hidden]{display:none}
+:is(#crash-tools,[data-tool]) .ch-root .ch-act:empty{display:none}
+:is(#crash-tools,[data-tool]) .ch-root .ch-act{margin:-6px 0 14px}
+:is(#crash-tools,[data-tool]) .ch-root .ch-tocmp{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:#b0352b;padding:6px 12px;border:1px solid #b0352b;border-radius:8px;background:#fff}
+:is(#crash-tools,[data-tool]) .ch-root .ch-tocmp:hover{background:#fdf3f2}

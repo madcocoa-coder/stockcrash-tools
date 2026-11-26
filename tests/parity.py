@@ -20,7 +20,7 @@ LEGACY_LABELS = [("'弱気相場 -20%〜'", "'暴落 -20%〜'"), ("弱気相場 
                  ("弱気相場（-20%以上）", "暴落（-20%以上）")]
 LEGACY_FONT = ('\n<style>#ch-root,#cmp-root{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN",Meiryo,"Yu Gothic UI","Noto Sans CJK JP","Noto Sans JP",system-ui,sans-serif;'
                'font-variant-numeric:tabular-nums;font-feature-settings:normal;letter-spacing:normal;font-style:normal}'
-               ':is(#ch-root,#cmp-root) :is(b,strong,th){font-weight:700}:is(#ch-root,#cmp-root) :is(select,input,button){font-family:inherit}'
+               ':is(#ch-root,#cmp-root) :is(b,strong,th){font-weight:700}:is(#ch-root,#cmp-root) *{font-family:inherit}'
                '#ch-root .tag{font-size:12px;line-height:1.5;padding:1px 6px;vertical-align:1px;white-space:nowrap}</style>')
 if LIVE:
     mock.serve()  # file:// だと gviz が CORS で断るので http で配る
@@ -102,7 +102,7 @@ async def open_tool(b, tool, kind, width, hash_=""):
     else:
         body = src + '\n<script src="%s"></script>' % mock.url_for(ROOT / "dist" / "crash-tools.min.js")
         # 全画面ボタン（legacy にない追加機能）の行は隠して比べる。全画面の動きは tests/fullscreen.py で確認
-        body += '\n<style>.ct-fsbar{display:none!important}</style>'
+        body += '\n<style>.ct-fsbar,.ct-tabs,.ch-act{display:none!important}</style>'  # legacy にない: 全画面ボタン・タブ・比較へ送るボタン
     f = OUT / f"parity_{tool}_{kind}.html"
     f.write_text(PAGE.format(body=body), encoding="utf-8")
     pg = await b.new_page(viewport={"width": width, "height": 1000})

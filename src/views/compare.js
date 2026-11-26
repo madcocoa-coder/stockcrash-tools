@@ -47,6 +47,7 @@ export function mountCompare(host, { sheet }) {
   host.innerHTML = '<div class="cmp-root">' + HTML + '</div>';
   const R = host.firstChild, $ = (s) => R.querySelector(s), daily = SERIES.sp500;
   let EV = [], BY = {}, SEL = [], range = 365, cur = null, ALL = null;
+  let ready = false, pending = [];
   const CACHE = {};
   const fs = addFullscreen($('.c-figwrap'), () => { if (SEL.length) draw(); });
 
@@ -70,6 +71,8 @@ export function mountCompare(host, { sheet }) {
     onResize(draw);
     const hs = (location.hash.match(/cmp=([\w,]+)/) || [])[1], ids = hs ? hs.split(',').filter((i) => BY[i]) : [];
     setSel(ids.length ? ids : defaults());
+    ready = true;
+    pending.forEach(add); pending = [];
   }
 
   // 既定: 継続中＋リーマン／コロナ／2022年／ブラックマンデー
@@ -217,4 +220,9 @@ export function mountCompare(host, { sheet }) {
     if (ALL) { go(); return; }
     loadSeries(sheet, daily, 'daily').then((rows) => { ALL = rows; go(); }).catch(() => { btn.textContent = '読み込みに失敗しました'; });
   }
+  return {
+    // 一覧タブから暴落を受け取る。読み込み前なら読み込み後に足す
+    add: (id) => { if (!ready) { pending.push(id); return; } if (!BY[id]) return; add(id); },
+    refresh: () => { if (ready && SEL.length) draw(); },
+  };
 }
