@@ -1,3 +1,4 @@
 node_modules/
 tests/out/
 __pycache__/
+dist/crash-tools.js

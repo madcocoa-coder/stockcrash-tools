@@ -1,0 +1,80 @@
+/* ルート（[data-tool]）配下にスコープ。ビルド時にJSへ文字列として埋め込む。
+   :is(#crash-tools,[data-tool]) の #crash-tools は実在しないが、:is() は中で一番強い詳細度を取るので、legacy の #ch-root と同じ「id 1個分」の強さになり、テーマのCSSに負けない */
+[data-tool]{display:block}
+
+/* 一覧 */
+:is(#crash-tools,[data-tool]) .ch-root{--bear:#b0352b;--corr:#d4877f;--line:#233b5e;--muted:#5f6873;--bd:#d7dbe0;font-size:15px;line-height:1.6;color:inherit}
+:is(#crash-tools,[data-tool]) .ch-root *{box-sizing:border-box}
+:is(#crash-tools,[data-tool]) .ch-root .ch-ctl{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 10px}
+:is(#crash-tools,[data-tool]) .ch-root .ch-seg{display:inline-flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+:is(#crash-tools,[data-tool]) .ch-root .ch-seg button{all:unset;cursor:pointer;padding:5px 11px;font-size:13px;color:var(--muted);background:#fff}
+:is(#crash-tools,[data-tool]) .ch-root .ch-seg button+button{border-left:1px solid var(--bd)}
+:is(#crash-tools,[data-tool]) .ch-root .ch-seg button.on{background:var(--line);color:#fff}
+:is(#crash-tools,[data-tool]) .ch-root .ch-lab{font-size:12px;color:var(--muted)}
+:is(#crash-tools,[data-tool]) .ch-root .ch-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:0 0 12px}
+:is(#crash-tools,[data-tool]) .ch-root .ch-stat{border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
+:is(#crash-tools,[data-tool]) .ch-root .ch-stat b{display:block;font-size:20px;line-height:1.3}
+:is(#crash-tools,[data-tool]) .ch-root .ch-stat span{font-size:12px;color:var(--muted)}
+:is(#crash-tools,[data-tool]) .ch-root svg{width:100%;max-width:none;height:auto;display:block;touch-action:pan-y}
+:is(#crash-tools,[data-tool]) .ch-root .ch-band{cursor:pointer}
+:is(#crash-tools,[data-tool]) .ch-root .ch-band:hover,:is(#crash-tools,[data-tool]) .ch-root .ch-band.sel{stroke:#111;stroke-width:1}
+:is(#crash-tools,[data-tool]) .ch-root .ch-leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin:4px 0 0}
+:is(#crash-tools,[data-tool]) .ch-root .ch-leg i{display:inline-block;width:12px;height:10px;margin-right:4px;vertical-align:-1px}
+:is(#crash-tools,[data-tool]) .ch-root .ch-info{min-height:52px;border-left:4px solid var(--bd);padding:6px 10px;margin:8px 0 14px;font-size:13px;background:#f6f7f9}
+:is(#crash-tools,[data-tool]) .ch-root .ch-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--bd);border-radius:8px;max-height:640px;overflow-y:auto}
+:is(#crash-tools,[data-tool]) .ch-root table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px;margin:0}
+:is(#crash-tools,[data-tool]) .ch-root th,:is(#crash-tools,[data-tool]) .ch-root td{padding:6px 8px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}
+:is(#crash-tools,[data-tool]) .ch-root th{position:sticky;top:0;background:#eceef1;cursor:pointer;user-select:none;z-index:1}
+:is(#crash-tools,[data-tool]) .ch-root th:first-child,:is(#crash-tools,[data-tool]) .ch-root td:first-child{text-align:left;white-space:normal;min-width:220px}
+:is(#crash-tools,[data-tool]) .ch-root th.asc:after{content:" ▲";font-size:10px}
+:is(#crash-tools,[data-tool]) .ch-root th.desc:after{content:" ▼";font-size:10px}
+:is(#crash-tools,[data-tool]) .ch-root tr.sel td{background:#fff7d6}
+:is(#crash-tools,[data-tool]) .ch-root tbody tr{cursor:pointer}
+:is(#crash-tools,[data-tool]) .ch-root .tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;color:#fff}
+:is(#crash-tools,[data-tool]) .ch-root .tag.b{background:var(--bear)}:is(#crash-tools,[data-tool]) .ch-root .tag.c{background:var(--corr)}
+:is(#crash-tools,[data-tool]) .ch-root .ongo{color:var(--bear);font-weight:bold}
+:is(#crash-tools,[data-tool]) .ch-root .ch-upd{margin:0 0 6px}
+:is(#crash-tools,[data-tool]) .ch-root .ch-note{font-size:12px;color:var(--muted);margin-top:8px}
+:is(#crash-tools,[data-tool]) .ch-root input[type=search]{padding:5px 8px;border:1px solid var(--bd);border-radius:8px;font-size:13px;min-width:160px}
+
+/* 比較 */
+:is(#crash-tools,[data-tool]) .cmp-root{--red:#b0352b;--ink:#14161a;--muted:#5f6873;--bd:#d7dbe0;--bg2:#f4f5f7;font-size:15px;line-height:1.6;color:var(--ink)}
+:is(#crash-tools,[data-tool]) .cmp-root *{box-sizing:border-box}
+:is(#crash-tools,[data-tool]) .cmp-root .c-lead{font-size:16px;font-weight:bold;border-left:4px solid var(--red);padding:8px 12px;background:#fdf3f2;margin:0 0 12px;min-height:44px}
+:is(#crash-tools,[data-tool]) .cmp-root .c-row{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:0 0 10px}
+:is(#crash-tools,[data-tool]) .cmp-root .c-lab{font-size:12px;color:var(--muted)}
+:is(#crash-tools,[data-tool]) .cmp-root .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--bd);border-radius:999px;padding:3px 6px 3px 10px;font-size:13px;background:#fff;line-height:1.4}
+:is(#crash-tools,[data-tool]) .cmp-root .chip i{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+:is(#crash-tools,[data-tool]) .cmp-root .chip button{all:unset;cursor:pointer;color:var(--muted);font-size:15px;padding:0 4px;line-height:1}
+:is(#crash-tools,[data-tool]) .cmp-root select{font-size:14px;padding:6px 8px;border:1px solid var(--bd);border-radius:8px;background:#fff;max-width:100%;color:var(--ink)}
+:is(#crash-tools,[data-tool]) .cmp-root .seg{display:inline-flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+:is(#crash-tools,[data-tool]) .cmp-root .seg button,:is(#crash-tools,[data-tool]) .cmp-root .btn{all:unset;cursor:pointer;padding:5px 11px;font-size:13px;color:var(--muted);background:#fff}
+:is(#crash-tools,[data-tool]) .cmp-root .seg button+button{border-left:1px solid var(--bd)}
+:is(#crash-tools,[data-tool]) .cmp-root .seg button.on{background:var(--ink);color:#fff}
+:is(#crash-tools,[data-tool]) .cmp-root .btn{border:1px solid var(--bd);border-radius:8px}
+:is(#crash-tools,[data-tool]) .cmp-root .btn:hover,:is(#crash-tools,[data-tool]) .cmp-root .seg button:hover{background:var(--bg2)}
+:is(#crash-tools,[data-tool]) .cmp-root .seg button.on:hover{background:var(--ink)}
+:is(#crash-tools,[data-tool]) .cmp-root .c-fig{position:relative;border:1px solid var(--bd);border-radius:10px;padding:6px 4px 0;background:#fff}
+:is(#crash-tools,[data-tool]) .cmp-root svg{width:100%;max-width:none;height:auto;display:block;touch-action:pan-y;cursor:crosshair}
+:is(#crash-tools,[data-tool]) .cmp-root .c-read{font-size:13px;margin:8px 0 14px;min-height:24px}
+:is(#crash-tools,[data-tool]) .cmp-root .c-read span{display:inline-block;margin-right:12px;white-space:nowrap}
+:is(#crash-tools,[data-tool]) .cmp-root .c-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--bd);border-radius:10px}
+:is(#crash-tools,[data-tool]) .cmp-root table{border-collapse:collapse;width:100%;min-width:640px;font-size:13px;margin:0}
+:is(#crash-tools,[data-tool]) .cmp-root th,:is(#crash-tools,[data-tool]) .cmp-root td{padding:7px 8px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}
+:is(#crash-tools,[data-tool]) .cmp-root th{background:#eceef1;font-weight:bold}
+:is(#crash-tools,[data-tool]) .cmp-root th:first-child,:is(#crash-tools,[data-tool]) .cmp-root td:first-child{text-align:left;white-space:normal;min-width:180px}
+:is(#crash-tools,[data-tool]) .cmp-root td b{font-size:14px}
+:is(#crash-tools,[data-tool]) .cmp-root .neg{color:var(--red)}
+:is(#crash-tools,[data-tool]) .cmp-root .c-note{font-size:12px;color:var(--muted);margin-top:8px}
+:is(#crash-tools,[data-tool]) .cmp-root .c-msg{font-size:13px;color:var(--muted);padding:40px 8px;text-align:center}
+
+/* 全画面表示（一覧・比較共通）。.ct-full は本物の全画面でも、使えない端末（iPhone）の重ね表示でも付く */
+:is(#crash-tools,[data-tool]) .ct-fsbar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:0 0 6px}
+:is(#crash-tools,[data-tool]) .ct-fs{all:unset;cursor:pointer;padding:4px 10px;font-size:12px;line-height:1.5;color:#5f6873;background:#fff;border:1px solid #d7dbe0;border-radius:8px;white-space:nowrap}
+:is(#crash-tools,[data-tool]) .ct-fs:hover{background:#f4f5f7}
+:is(#crash-tools,[data-tool]) .ct-fshint{display:none;font-size:12px;color:#5f6873;margin-right:auto}
+:is(#crash-tools,[data-tool]) .ct-full{position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147483000;margin:0;background:#fff;color:#14161a;overflow:auto;-webkit-overflow-scrolling:touch;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+:is(#crash-tools,[data-tool]) .ct-full .ct-fs{color:#fff;background:#14161a;border-color:#14161a}
+:is(#crash-tools,[data-tool]) .ct-full .ch-info{margin-bottom:0}
+@media (orientation:portrait) and (max-width:700px){:is(#crash-tools,[data-tool]) .ct-full .ct-fshint{display:inline}}
+html.ct-noscroll,html.ct-noscroll body{overflow:hidden}
