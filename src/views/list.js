@@ -22,6 +22,7 @@ const HTML =
   '<span><i style="background:var(--bear);opacity:.25"></i>回復期間（下段、点線は未回復）</span>' +
   '<span><i style="background:var(--line);height:2px;vertical-align:3px"></i>S&amp;P500（対数目盛）</span></div>' +
   '<div class="ch-info">' + INFO0 + '</div></div>' + // .ch-fig まで（全画面の範囲）
+  '<div class="ch-act"></div>' + // 選んだ暴落を比較タブへ送るボタン（タブ統合時だけ出す）
   '<div class="ch-ctl"><input type="search" placeholder="名称で絞り込み（例：ショック）"><span class="ch-lab">見出しをタップで並び替え</span></div>' +
   '<div class="ch-wrap"><table><thead><tr>' + COLS.map(([k, l]) => '<th data-s="' + k + '">' + l + '</th>').join('') +
   '</tr></thead><tbody></tbody></table></div>' +
@@ -32,7 +33,7 @@ const tag = (e) => '<span class="tag ' + (e.bear ? 'b' : 'c') + '">' + (e.bear ?
 const ongo = '<span class="ongo">未回復</span>';
 const col = (e) => (e.bear ? 'var(--bear)' : 'var(--corr)');
 
-export function mountList(host, { sheet }) {
+export function mountList(host, { sheet, onCompare }) {
   host.innerHTML = '<div class="ch-root">' + HTML + '</div>';
   const R = host.firstChild, $ = (s) => R.querySelector(s);
   const st = { cls: 'all', from: 1871, sort: 'pk', dir: 1, q: '', sel: null };
@@ -144,10 +145,20 @@ export function mountList(host, { sheet }) {
       dur(e.fall) + '・回復 ' + (e.rc ? dur(e.rec) + '（' + fdJa(e.rc, e.mon) + '）' : ongo);
   }
 
+  // 比較タブへ送るボタン。日次データのある1928年以降の暴落だけ（比較ツールの対象）
+  function act(e) {
+    const box = $('.ch-act');
+    if (!onCompare || !e || e.mon) { box.innerHTML = ''; return; }
+    box.innerHTML = '<button type="button" class="ch-tocmp">この暴落を「重ねて比較」で見る →</button>';
+    box.firstChild.addEventListener('click', () => onCompare(e.id));
+  }
+
   // 帯・行のタップ。表の行をもう一度タップすると解除
   function pick(id, fromChart) {
     st.sel = st.sel == id && !fromChart ? null : id;
-    info(EV.filter((x) => x.id == st.sel)[0]);
+    const e = EV.filter((x) => x.id == st.sel)[0];
+    info(e);
+    act(e);
     chart();
     R.querySelectorAll('tbody tr').forEach((tr) => {
       const on = tr.dataset.id == st.sel;
@@ -173,4 +184,5 @@ export function mountList(host, { sheet }) {
       '<tr><td colspan="8">該当なし</td></tr>';
     R.querySelectorAll('tbody tr[data-id]').forEach((tr) => tr.addEventListener('click', () => pick(tr.dataset.id, false)));
   }
+  return { refresh: () => { if (EV.length) chart(); } };
 }
