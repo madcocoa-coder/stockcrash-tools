@@ -55,7 +55,7 @@ export function mountCompare(host, { sheet }) {
   function init(all) {
     EV = all.filter((e) => !e.mon); // 日次データのある1928年以降だけ
     EV.forEach((e) => { BY[e.id] = e; });
-    const sel = $('.c-add'), grp = { b: '弱気相場（-20%以上）', c: '調整（-10〜20%）' };
+    const sel = $('.c-add'), grp = { b: '暴落（-20%以上）', c: '調整（-10〜20%）' };
     sel.insertAdjacentHTML('beforeend', ['b', 'c'].map((g) => '<optgroup label="' + grp[g] + '">' +
       EV.filter((e) => (g == 'b') == e.bear).slice().reverse().map((e) => '<option value="' + e.id + '">' + e.name + '（' + spct(e.dd) + '）</option>').join('') +
       '</optgroup>').join(''));

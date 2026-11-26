@@ -37,7 +37,7 @@ scripts/crash_update.py  週次更新スクリプト（claude.ai のスケジュ
 
 ```html
 <div data-tool="crash" data-tab="list" data-sheet="1JP-4PJimOphXB9pTvG8xCW4F12Jn5FrnHVUiT4iRVFM"></div>
-<script src="https://cdn.jsdelivr.net/gh/madcocoa-coder/stockcrash-tools@v1.0.1/dist/crash-tools.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/madcocoa-coder/stockcrash-tools@v1.0.2/dist/crash-tools.min.js" defer></script>
 ```
 - `data-tab` は `list` か `compare`。`data-sheet` を省くと既定のシート
 - バージョンはタグで固定。`@latest` やブランチ指定は使わない
@@ -66,7 +66,8 @@ npm run fixtures            # 合成データを作り直す（固定シード�
 - 既知差分: legacy の一覧は 1970-01-01 の月次の点を落とす（`Date.UTC(1970,0,1)` が 0 で偽扱い）。統合版は描く
 - 追加機能（legacy にない）: 全画面ボタン。範囲は一覧が .ch-fig（チャート＋凡例＋詳細枠）、比較が .c-figwrap（表示期間＋チャート＋読み取り行）。
   全画面中だけグラフの高さを画面に合わせる。parity.py ではボタンの行（.ct-fsbar）を隠して比べる
-- 文字はツール内でシステムフォント・等幅数字に固定（styles.css 冒頭）。テーマの Web フォントは使わない（分割配信で太字の字形が一部だけ届き、ちぐはぐになったため。v1.0.1）。parity.py は legacy に同じ指定を足して比べる
+- 表示ラベル: 20%以上の下落は「暴落」、10〜20%は「調整」（v1.0.2 でユーザー決定。旧「弱気相場／弱気」）。データの定義と内部の名前（bear など）は変えていない。parity.py は legacy に同じ置き換え（LEGACY_LABELS）を当てて比べる
+- 文字はツール内でシステムフォント・等幅数字に固定（styles.css 冒頭）。日本語フォントを先頭に置き、数字と漢字を同じフォントで描く（欧文フォントが先だと「82」と「回」で太さがずれる）。Windows はメイリオ優先。テーマの Web フォントは使わない（分割配信で太字の字形が一部だけ届き、ちぐはぐになったため。v1.0.1）。parity.py は legacy に同じ指定を足して比べる
 - 全画面の高さ（fitHeight）は、枠の余白と子要素の上下マージンまで引く。一覧の詳細枠は全画面中だけ2行分の高さを確保（帯をタップして2行になっても下が切れない）
 - WordPress 側に置くのは div と script src だけ。本文に `<p>` や `&` を含むインラインJSを書かない（WP QUADS / wptexturize で壊れる）
 - `scripts/crash_update.py` を直したら claude.ai 側のスケジュールタスクの指示文（本体と sha256）も更新が必要。ユーザーに依頼する

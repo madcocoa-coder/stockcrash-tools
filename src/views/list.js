@@ -6,7 +6,7 @@ import { segHTML, bindSeg } from '../ui/controls.js';
 import { el, f1, svg, pathD, yGrid, xGrid, logTicks, yearStep, onResize } from '../ui/chart.js';
 import { addFullscreen, fitHeight } from '../ui/fullscreen.js';
 
-const CLS = [['all', 'すべて'], ['bear', '弱気相場 -20%〜'], ['corr', '調整 -10〜20%']];
+const CLS = [['all', 'すべて'], ['bear', '暴落 -20%〜'], ['corr', '調整 -10〜20%']];
 const FROM = [['1871', '1871年〜'], ['1928', '1928年〜'], ['1970', '1970年〜'], ['2000', '2000年〜']];
 const COLS = [['name', '出来事'], ['dd', '下落率'], ['pk', 'ピーク'], ['tr', '底'], ['fall', '下落期間'], ['rec', '回復期間'], ['tot', '全期間'], ['rc', '回復日']];
 const INFO0 = '帯や表の行をタップすると詳細を表示';
@@ -17,7 +17,7 @@ const HTML =
   '<span class="ch-lab">期間</span>' + segHTML('ch-seg', 'from', FROM, '1871') + '</div>' +
   '<div class="ch-upd ch-lab"></div><div class="ch-stats"></div>' +
   '<div class="ch-fig"><div class="ch-chart"><div class="ch-note">データを読み込み中…</div></div>' +
-  '<div class="ch-leg"><span><i style="background:var(--bear)"></i>弱気相場の下落期間（ピーク→底）</span>' +
+  '<div class="ch-leg"><span><i style="background:var(--bear)"></i>暴落の下落期間（ピーク→底）</span>' +
   '<span><i style="background:var(--corr)"></i>調整の下落期間</span>' +
   '<span><i style="background:var(--bear);opacity:.25"></i>回復期間（下段、点線は未回復）</span>' +
   '<span><i style="background:var(--line);height:2px;vertical-align:3px"></i>S&amp;P500（対数目盛）</span></div>' +
@@ -26,9 +26,9 @@ const HTML =
   '<div class="ch-wrap"><table><thead><tr>' + COLS.map(([k, l]) => '<th data-s="' + k + '">' + l + '</th>').join('') +
   '</tr></thead><tbody></tbody></table></div>' +
   '<div class="ch-note">S&amp;P500の終値ベース（配当含まず・インフレ調整なし）。1927年以前はShillerの月次平均値。' +
-  '回復＝ピークの値を終値で取り戻した日。弱気相場は20%以上の戻りで終わりとみなして区切る。出典：Robert Shiller、Yahoo Finance、Morningstar。</div>';
+  '回復＝ピークの値を終値で取り戻した日。暴落（20%以上の下落）は底から20%以上戻したら終わりとみなして区切る。出典：Robert Shiller、Yahoo Finance、Morningstar。</div>';
 
-const tag = (e, long) => '<span class="tag ' + (e.bear ? 'b' : 'c') + '">' + (e.bear ? (long ? '弱気相場' : '弱気') : '調整') + '</span>';
+const tag = (e) => '<span class="tag ' + (e.bear ? 'b' : 'c') + '">' + (e.bear ? '暴落' : '調整') + '</span>';
 const ongo = '<span class="ongo">未回復</span>';
 const col = (e) => (e.bear ? 'var(--bear)' : 'var(--corr)');
 

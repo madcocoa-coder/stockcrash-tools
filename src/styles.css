@@ -3,8 +3,10 @@
 [data-tool]{display:block}
 
 /* 文字（一覧・比較共通）。テーマの Web フォント（Noto Sans JP などの分割配信）だと、太字の字形が届いた文字と届いていない文字が混ざり、
-   「82回」の一部だけ太くなるなどちぐはぐになる。ツール内は端末のシステムフォントに固定し、数字は等幅にそろえる */
-:is(#crash-tools,[data-tool]) :is(.ch-root,.cmp-root){font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Segoe UI","Yu Gothic UI",Meiryo,system-ui,sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:normal;letter-spacing:normal;font-style:normal}
+   「82回」の一部だけ太くなるなどちぐはぐになる。ツール内は端末のシステムフォントに固定し、数字は等幅にそろえる。
+   日本語フォントを先頭に置き、数字と漢字を同じフォントで描く（Segoe UI などの欧文フォントを先にすると「82」と「回」が別のフォントになり太さがずれる）。
+   Windows は游ゴシックより小さい文字が潰れにくいメイリオを優先 */
+:is(#crash-tools,[data-tool]) :is(.ch-root,.cmp-root){font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN",Meiryo,"Yu Gothic UI","Noto Sans CJK JP","Noto Sans JP",system-ui,sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:normal;letter-spacing:normal;font-style:normal}
 :is(#crash-tools,[data-tool]) :is(.ch-root,.cmp-root) :is(b,strong,th){font-weight:700}
 :is(#crash-tools,[data-tool]) :is(.ch-root,.cmp-root) :is(select,input,button){font-family:inherit}
 
@@ -36,7 +38,7 @@
 :is(#crash-tools,[data-tool]) .ch-root th.desc:after{content:" ▼";font-size:10px}
 :is(#crash-tools,[data-tool]) .ch-root tr.sel td{background:#fff7d6}
 :is(#crash-tools,[data-tool]) .ch-root tbody tr{cursor:pointer}
-:is(#crash-tools,[data-tool]) .ch-root .tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;color:#fff}
+:is(#crash-tools,[data-tool]) .ch-root .tag{display:inline-block;font-size:12px;line-height:1.5;padding:1px 6px;border-radius:4px;color:#fff;vertical-align:1px;white-space:nowrap}
 :is(#crash-tools,[data-tool]) .ch-root .tag.b{background:var(--bear)}:is(#crash-tools,[data-tool]) .ch-root .tag.c{background:var(--corr)}
 :is(#crash-tools,[data-tool]) .ch-root .ongo{color:var(--bear);font-weight:bold}
 :is(#crash-tools,[data-tool]) .ch-root .ch-upd{margin:0 0 6px}

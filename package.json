@@ -1,6 +1,6 @@
 {
   "name": "stockcrash-tools",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "米国株（S&P500）の暴落一覧・比較ツール（WordPress埋め込み用）",
   "scripts": {

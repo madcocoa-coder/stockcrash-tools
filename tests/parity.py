@@ -14,9 +14,14 @@ import mock  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LIVE = "--live" in sys.argv
-LEGACY_FONT = ('\n<style>#ch-root,#cmp-root{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Segoe UI","Yu Gothic UI",Meiryo,system-ui,sans-serif;'
+LEGACY_LABELS = [("'弱気相場 -20%〜'", "'暴落 -20%〜'"), ("弱気相場 -20%〜", "暴落 -20%〜"), ("弱気相場の下落期間（ピーク→底）", "暴落の下落期間（ピーク→底）"),
+                 ("弱気相場は20%以上の戻りで終わりとみなして区切る", "暴落（20%以上の下落）は底から20%以上戻したら終わりとみなして区切る"),
+                 ("(e.bear?'弱気相場':'調整')", "(e.bear?'暴落':'調整')"), ("(e.bear?'弱気':'調整')", "(e.bear?'暴落':'調整')"),
+                 ("弱気相場（-20%以上）", "暴落（-20%以上）")]
+LEGACY_FONT = ('\n<style>#ch-root,#cmp-root{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN",Meiryo,"Yu Gothic UI","Noto Sans CJK JP","Noto Sans JP",system-ui,sans-serif;'
                'font-variant-numeric:tabular-nums;font-feature-settings:normal;letter-spacing:normal;font-style:normal}'
-               ':is(#ch-root,#cmp-root) :is(b,strong,th){font-weight:700}:is(#ch-root,#cmp-root) :is(select,input,button){font-family:inherit}</style>')
+               ':is(#ch-root,#cmp-root) :is(b,strong,th){font-weight:700}:is(#ch-root,#cmp-root) :is(select,input,button){font-family:inherit}'
+               '#ch-root .tag{font-size:12px;line-height:1.5;padding:1px 6px;vertical-align:1px;white-space:nowrap}</style>')
 if LIVE:
     mock.serve()  # file:// だと gviz が CORS で断るので http で配る
 OUT = ROOT / "tests" / "out"
@@ -91,6 +96,9 @@ async def open_tool(b, tool, kind, width, hash_=""):
         # v1.0.1 で統合版だけ文字をシステムフォント・等幅数字に固定した（テーマの Web フォントで太さがちぐはぐになるため）。
         # 見た目の比較では legacy にも同じ指定を足して、文字以外の差を見る
         body += LEGACY_FONT
+        # v1.0.2 で表示ラベルを「弱気相場／弱気」→「暴落」に変えた（ユーザー決定）。legacy にも同じ置き換えを当てて比べる
+        for old, new in LEGACY_LABELS:
+            body = body.replace(old, new)
     else:
         body = src + '\n<script src="%s"></script>' % mock.url_for(ROOT / "dist" / "crash-tools.min.js")
         # 全画面ボタン（legacy にない追加機能）の行は隠して比べる。全画面の動きは tests/fullscreen.py で確認
