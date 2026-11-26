@@ -4,7 +4,7 @@
 import csv, functools, http.server, io, os, pathlib, re, socketserver, threading, urllib.parse
 
 FIX = pathlib.Path(__file__).parent / "fixtures"
-GIDS = {"257873827": "events.csv", "886500007": "monthly.csv", "2091119745": "daily.csv"}
+GIDS = {"257873827": "events.csv", "886500007": "monthly.csv", "2091119745": "daily.csv", "536414932": "rates.csv"}  # rates.csv は本物の金利（Shiller・FRED）
 FIXED_NOW = "2026-11-26T03:00:00Z"  # Date.now() を固定（一覧の右端・比較の期間の計算をそろえる）
 _cache = {}
 ROOT = pathlib.Path(__file__).resolve().parent.parent

@@ -12,6 +12,7 @@ src/
   core/events.js     「暴落一覧」タブ → 暴落の配列（派生値: dd, bear, mon, on, fall, rec, tot）、短い名前
   series/registry.js 系列の定義と読み込み（loadSeries(sheet, def, 'monthly'|'daily', [from,to]?)）
   series/sp500.js    S&P500 の取得元（月次・日次タブ）
+  series/ust10y.js   米10年金利、series/fedfunds.js 政策金利（タブ「金利_月次」gid 536414932。registry に valueAt・hikes（利上げ局面））
   ui/chart.js        SVG 文字列の部品（el, pathD, yGrid, xGrid, logTicks, steps, onResize）
   ui/controls.js     セグメント、チップ
   ui/fullscreen.js   全画面ボタン（Fullscreen API＋Android は横向き固定。使えない iPhone は position:fixed の重ね表示）
@@ -31,15 +32,17 @@ tests/
   fullscreen.py      全画面ボタン（iPhone相当・Android相当 × 縦→横に回転 → 閉じる）
   prod_sim.py        本番ページの埋め込み（legacy でも公開中の統合版でも）を手元のビルドに差し替えて、本番のテーマ・広告込みで開く（要ネット）
   tabs.py            タブ統合（一覧→比較へ送る、比較ページ、共有URL）
+  rates.py           金利を重ねる（一覧の線・帯・凡例、比較の表の列）。fixtures/rates.csv は本物の金利
 legacy/              現行の埋め込み版（比較の基準。消さない）
-scripts/crash_update.py  週次更新スクリプト（claude.ai のスケジュールタスクが sha256 で照合して実行）
+scripts/crash_update.py  週次更新スクリプト（claude.ai のスケジュールタスクが sha256 で照合して実行）。金利も FRED から更新（v1.2.0〜）
+scripts/trigger_prompt.md  スケジュールタスクの指示文（スクリプト本体と sha256 入り）。直したら作り直してタスクに貼る
 ```
 
 ## 埋め込み（WordPress に貼るのはこれだけ）
 
 ```html
 <div data-tool="crash" data-tab="list" data-sheet="1JP-4PJimOphXB9pTvG8xCW4F12Jn5FrnHVUiT4iRVFM"></div>
-<script src="https://cdn.jsdelivr.net/gh/madcocoa-coder/stockcrash-tools@v1.1.0/dist/crash-tools.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/madcocoa-coder/stockcrash-tools@v1.2.0/dist/crash-tools.min.js" defer></script>
 ```
 - `data-tab` は `list` か `compare`（最初に開くタブ。どちらのページでも両方のタブが使える）。`data-sheet` を省くと既定のシート
 - バージョンはタグで固定。`@latest` やブランチ指定は使わない
@@ -55,6 +58,7 @@ python3 tests/smoke.py demo/compare.html --mock --tab compare
 python3 tests/wp_sim.py
 python3 tests/fullscreen.py
 python3 tests/tabs.py
+python3 tests/rates.py
 python3 tests/prod_sim.py   # 本番相当（gomi-investor.com・docs.google.com に接続できる環境で）
 npm run fixtures            # 合成データを作り直す（固定シードなので同じものができる）
 ```
@@ -77,3 +81,8 @@ npm run fixtures            # 合成データを作り直す（固定シード�
 - WordPress 側に置くのは div と script src だけ。本文に `<p>` や `&` を含むインラインJSを書かない（WP QUADS / wptexturize で壊れる）
 - `scripts/crash_update.py` を直したら claude.ai 側のスケジュールタスクの指示文（本体と sha256）も更新が必要。ユーザーに依頼する
 - 系列を足すときは `src/series/` に定義を1つ作り registry に登録する
+- 追加機能（legacy にない）: 金利（v1.2.0）。既定はオフ。一覧は「金利を重ねる」（.ch-rategrp）で米10年金利／政策金利の線（右目盛）と利上げ局面の帯（政策金利が1%pt以上上がった期間、3か月未満は除く、開始は谷の水準+0.25pt以内を最後に出た月）。
+  比較は「金利の変化も表に出す」（.c-ratebtn）で表に2列。金利は選んだときに初めて読む。parity.py では隠して比べる
+- 金利と株価の関係は断定しない（注意書き .ch-ratenote）。急な利上げの後の暴落もあれば、金利上昇と株高が並んだ時期、金利と無関係な暴落もある
+- 金利のデータ: 米10年金利は1953-03まで Shiller の Long Interest Rate、1953-04から FRED GS10（月平均）。政策金利は FRED FEDFUNDS（1954-07〜）
+- FRED は User-Agent がブラウザを名乗ると接続を切る。curl の UA で取る
